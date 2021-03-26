@@ -3,3 +3,4 @@
 *.geojson
 *.python-version
 .DS_Store
+*.cfg
