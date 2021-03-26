@@ -4,3 +4,4 @@
 *.python-version
 .DS_Store
 *.cfg
+*.json
