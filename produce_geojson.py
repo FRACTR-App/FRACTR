@@ -9,9 +9,9 @@ def hydrants_to_geojson(output_file_name, file_path):
     # print(gdf.columns)
 
     # hydrant_data = gdf[["COUNTY", "HYDRANTID", "HYDRANTTYPE", "FLOWRATE", "geometry"]]
-    hydrant_coords = gdf["geometry"]
-
     # print(hydrant_data)
+
+    hydrant_coords = gdf["geometry"]
     print(hydrant_coords)
 
     print("Outputting %s.geojson..." % output_file_name)
@@ -25,9 +25,9 @@ def zones_to_geojson(output_file_name, file_path):
     # print(gdf.columns)
 
     # zone_data = gdf[["COUNTY", "ESZID", "FIRE_AgencyId", "ESN", "geometry"]]
-    zone_polygons = gdf["geometry"]
-
     # print(zone_data)
+
+    zone_polygons = gdf["geometry"]
     print(zone_polygons)
 
     print("Outputting %s.geojson..." % output_file_name)
@@ -40,11 +40,9 @@ def stations_to_geojson(output_file_name, file_path):
     structure_data = file_path
     gdf = gpd.read_file(structure_data)
     
-    # station_data = gdf[["COUNTY", "ESN", "ZIP", "ESZ", "geometry"]]
-    station_coords = gdf["geometry"]
-
-    # print(station_data)
-    # print(station_coords)
+    station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION"), "geometry"]
+    print(station_coords)
+    # print(gdf.SITETYPE.unique())
     
     print("Outputting %s.geojson..." % output_file_name)
     station_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
