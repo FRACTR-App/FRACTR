@@ -26,7 +26,7 @@ else:
 
 #make the request for E-911 structure data from VT Geoportal
 r = requests.get('https://opendata.arcgis.com/datasets/7a393abbbaa941449630361d9fd153c4_29.geojson')
-if not(r.raise_for_status()):
+if not(r.raise_for_status()): 
     #Create the json object
     address_data = r.json()
     #Write the object to file.
