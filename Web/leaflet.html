@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+   
+    <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+</head>
+<body>
+    <div id="mapid" style="height: 750px;"></div>
+    <script>
+        var mymap = L.map('mapid').setView([44, -72], 8);
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'YOUR-MAPBOX-API-KEY-HERE'
+        }).addTo(mymap);
+
+        function polystyle(feature) {
+            return {
+                fillColor: 'blue',
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: 0.7
+            }
+        }
+
+        let zones_path = "PATH_TO_GEO_JSON.geojson"
+        var zones = L.geoJSON( null, {style:polystyle} ).addTo(mymap);
+
+        $.getJSON(zones_path, function(data) {
+            zones.addData(data);
+        });
+        zones.addTo(mymap);
+
+    </script>
+
+</body>
+
+</html>
