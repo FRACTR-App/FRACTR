@@ -2,11 +2,10 @@
 
 import osmnx as ox
 import networkx as nx
-
-#Easily get access to different locations (these can be points or polygons)
-place1 = ox.geocode_to_gdf('Vermnont, USA')
-place2 = ox.geocode_to_gdf('Addison County, Vermnont, USA')
-place3 = ox.geocode_to_gdf('Middlebury, Vermnont, USA')
+import geojson
+import geopandas as gpd
+from shapely.geometry import Polygon
+from shapely.geometry import shape
 
 """
 Specify type of street network:
@@ -17,31 +16,74 @@ Specify type of street network:
 'all'
 'all_private'
 """
+#1) Import the geojson file for zone polygons one line at a time
+#2) For each line, create the network and gather the ESN number
+#3) Import the geojson file for station coords and locate the corresponding stations by ESN
+#4) Run network from point bounding it by the zone network
+"""
+gdf = gpd.read_file("zone_polygons.geojson")
+zones = gdf["geometry"]
+esn = gdf["ESN"]
+for zone in zones:
+    print(zone)
+    polygon = zone
+    #create the network from geometry
+    G = ox.graph_from_polygon(zone, network_type='drive_service')
+    ox.plot_graph(G)
+    #save the network to be used later
+    ox.save_graphml(G, filepath="./graph.graphml")
+    break
+"""
+
+gdf = gpd.read_file("zone_polygons.geojson")
+shape_poly = gdf.unary_union
+print(type(shape_poly))
+#zone = gdf.loc[[0], 'geometry']
+# print(zone)
+# print(type(zone))
+
+# #convert to gdf
+# polygon = gpd.GeoDataFrame(geometry=zone)
+# print(type(polygon))
+# print(shape_poly)
+
+# #conver to shapely polygon
+# poly = Polygon(polygon)
+# print(type(poly))
+
+# #poly.to_file("zone_polygon.shp", driver='ESRI Shapefile')
+
+# #shape_file = "zone_polygon.shp"
+G = ox.graph_from_polygon(shape_poly, network_type='drive_service')
+ox.plot_graph(G)
+
+
+#Get street network from polygon using Geopandas
+##G = ox.graph_from_polygon(shapefile, network_type='drive_service')
+##ox.plot_graph(G)
+
 
 #Get street network from bounding box
-G = ox.graph_from_bbox(37.79, 37.78, -122.41, -122.43, network_type='drive')
-G_projected = ox.project_graph(G)
-ox.plot_graph(G_projected)
+##G = ox.graph_from_bbox(37.79, 37.78, -122.41, -122.43, network_type='drive')
+##G_projected = ox.project_graph(G)
+##ox.plot_graph(G_projected)
 
 #Get street network from point
-G = ox.graph_from_point((37.79, -122.41), dist=750, network_type='all')
-ox.plot_graph(G)
+##G = ox.graph_from_point((37.79, -122.41), dist=750, network_type='all')
+##ox.plot_graph(G)
 #You can input a certain network to the "street network from point or address" in order to 
 # find nodes within a certain distance of an address that are in the bounds of the inputted network
 # network from address, including only nodes within 1km along the network from the address
-G = ox.graph_from_address(
-    address="350 5th Ave, New York, NY",
-    dist=1000,
-    dist_type="network",
-    network_type="drive",
-)
+
+#G = ox.graph_from_address(
+#    address="350 5th Ave, New York, NY",
+#    dist=1000,
+#    dist_type="network",
+#    network_type="drive",
+#)
+
 # you can project the network to UTM (zone calculated automatically)
-G_projected = ox.project_graph(G)
-
-#Get street network from polygon using Geopandas
-G = ox.graph_from_polygon(shapefile, network_type='drive')
-ox.plot_graph(G)
-
+#G_projected = ox.project_graph(G)
 
 #PS. you can convert your graph to node and edge GeoPandas GeoDataFrames
 """
@@ -53,9 +95,9 @@ for the New York urbanized area) as ESRI shapefiles or GeoPackages to work
 with in any GIS
 """
 # save graph to shapefile, geopackage, or graphml
-ox.save_graph_shapefile(G, filepath="./graph_shapefile/")
-ox.save_graph_geopackage(G, filepath="./graph.gpkg")
-ox.save_graphml(G, filepath="./graph.graphml")
+##ox.save_graph_shapefile(G, filepath="./graph_shapefile/")
+##ox.save_graph_geopackage(G, filepath="./graph.gpkg")
+##ox.save_graphml(G, filepath="./graph.graphml")
 
 """
 I think we will want to do the following for response time network:
