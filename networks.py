@@ -1,5 +1,6 @@
 #Playing around with OSMnx and Networkx
 
+from produce_geojson import stations_to_geojson
 import osmnx as ox
 import networkx as nx
 # import geojson
@@ -35,26 +36,37 @@ for zone in zones:
     break
 """
 
-# Fetch "zone_polygons.geojson", pass a Polygon to OSMNX
-# (the first element in the dataframe is a Polygon)
-gdf = gpd.read_file("zone_polygons.geojson")
-first_poly = gdf['geometry'].loc[0]
-print(type(first_poly)) # <class 'shapely.geometry.polygon.Polygon'>
-G = ox.graph_from_polygon(first_poly, network_type='drive_service')
-ox.plot_graph(G)
+# Fetch "zone_polygons.geojson"
+zones = gpd.read_file("zone_polygons.geojson") # Middlebury's zone polygon
+stations = gpd.read_file("fire_station_coords.geojson") # Both Middlebury Fire Station
+zone_geom = zones['geometry'].loc[0] # Get first element
+station_one_geom = stations['geometry'].loc[0]
+print(type(zone_geom))
+print(type(station_one_geom))
+
+
+
+
+# Pass a Polygon to OSMNX
+# (e.g., the first element in the dataframe is a Polygon)
+
+# first_poly = gdf['geometry'].loc[0]
+# print(type(first_poly)) # <class 'shapely.geometry.polygon.Polygon'>
+# G = ox.graph_from_polygon(first_poly, network_type='drive_service')
+# ox.plot_graph(G)
 
 # Passing a MultiPolygon to OSMNX (the last row in the dataframe is one)
-one_multi = gdf['geometry'].iloc[-1]
-print(type(one_multi))
-G = ox.graph_from_polygon(one_multi, network_type='drive_service')
-ox.plot_graph(G)
+# one_multi = gdf['geometry'].iloc[-1]
+# print(type(one_multi))
+# G = ox.graph_from_polygon(one_multi, network_type='drive_service')
+# ox.plot_graph(G)
 
 # i = 0
 # Iterate through geometry column of dataframe, passing all rows to OSMNX
 # for poly in gdf['geometry'].loc():
 #     print(type(poly))
 #     G = ox.graph_from_polygon(first_poly, network_type='drive_service')
-#     # ox.plot_graph(G) 
+#     # ox.plot_graph(G)
 #     if i == 3:
 #         break
 #     i += 1

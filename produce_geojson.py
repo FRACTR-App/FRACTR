@@ -1,6 +1,8 @@
 import geopandas as gpd
 import osmnx as ox
-from datasets import api_hydrants_path, api_zones_path, api_structures_path, request_API_data
+from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, request_API_data
+
+# Middlebury ESN == 283
 
 # Creates a 1-column geojson file containing fire hydrant coordinates
 # from a json file collected from the Vermont Geoportal API
@@ -30,7 +32,8 @@ def zones_to_geojson(output_file_name, input_file_path):
     # zone_data = gdf[["COUNTY", "ESZID", "FIRE_AgencyId", "ESN", "geometry"]]
     # print(zone_data)
 
-    zone_polygons = gdf[["ESN", "geometry"]]
+    zone_polygons = gdf.loc[(gdf["ESN"] == 283),
+        ["ESN", "geometry"]]
     print(zone_polygons)
 
     print("Outputting %s.geojson..." % output_file_name)
@@ -46,7 +49,8 @@ def stations_to_geojson(output_file_name, input_file_path):
     structure_data = input_file_path
     gdf = gpd.read_file(structure_data)
     
-    station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION"), ["ESN", "geometry"]]
+    station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION") & (gdf["ESN"] == 283),
+        ["ESN", "geometry"]]
     print(station_coords)
     # print(gdf.SITETYPE.unique())
     
@@ -75,14 +79,14 @@ def merged_to_geojson(output_file_name, file_path_1, file_path_2):
 if __name__ == "__main__":
 
     # Creates JSON files collected from the API to be ingested by GeoPandas
-    request_API_data()
+    # request_API_data()
 
     # Create new GEOJSON files by filtering through JSON data for relevant columns,
     # output geojson files
     
-    hydrants_to_geojson("hydrant_coords", api_hydrants_path)
-    zones_to_geojson("zone_polygons", api_zones_path)
-    stations_to_geojson("fire_station_coords", api_structures_path)
+    # hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
+    zones_to_geojson("zone_polygons", API_ZONES_PATH)
+    stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
     # merged = merged_to_geojson("merged_zones_stations", 'zone_polygons.geojson', 'fire_station_coords.geojson')
     # print(merged)
 
