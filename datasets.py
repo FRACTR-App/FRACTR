@@ -1,9 +1,9 @@
 import requests
 import json
 
-api_hydrants_path = "hydrants.json"
-api_zones_path = "zones.json"
-api_structures_path = "structures.json"
+API_HYDRANTS_PATH = "hydrants.json"
+API_ZONES_PATH = "zones.json"
+API_STRUCTURES_PATH = "structures.json"
 
 # Downloads data as JSON files from the Vermont Geoportal REST API
 def request_API_data():
@@ -13,7 +13,7 @@ def request_API_data():
         # Create the json object
         hydrant_data = r.json()
         # Write the object to file.
-        with open(api_hydrants_path,'w') as jsonFile:
+        with open(API_HYDRANTS_PATH,'w') as jsonFile:
             json.dump(hydrant_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve hydrant data")
@@ -25,7 +25,7 @@ def request_API_data():
         # Create the json object
         zone_data = r.json()
         # Write the object to file.
-        with open(api_zones_path,'w') as jsonFile:
+        with open(API_ZONES_PATH,'w') as jsonFile:
             json.dump(zone_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve service zone data")
@@ -37,7 +37,7 @@ def request_API_data():
         # Create the json object
         structures_data = r.json()
         # Write the object to file.
-        with open(api_structures_path,'w') as jsonFile:
+        with open(API_STRUCTURES_PATH,'w') as jsonFile:
             json.dump(structures_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve structure data")
