@@ -7,6 +7,7 @@ import networkx as nx
 import geopandas as gpd
 from shapely.geometry import Polygon
 from shapely.geometry import shape
+ox.config(log_console=True, use_cache=True)
 
 """
 Specify type of street network:
@@ -43,9 +44,34 @@ zone_geom = zones['geometry'].loc[0] # Get first element
 station_one_geom = stations['geometry'].loc[0]
 print(type(zone_geom))
 print(type(station_one_geom))
+print(station_one_geom)
 
+# transform the point geometry into a tuple
+station_tuple = (station_one_geom.y, station_one_geom.x)
+print(station_tuple)
 
+G=ox.graph_from_point(station_tuple, dist=3000, dist_type='network', network_type='drive_service')
+ox.plot_graph(G)
 
+# impute edge (driving) speeds and calculate edge traversal times
+Graph = ox.add_edge_speeds(G)
+Graph = ox.add_edge_travel_times(G)
+
+#G = ox.graph_from_polygon(zone_geom, network_type='drive_service')
+#ox.plot_graph(G)
+
+# create the network analysis for a set distance around the fire station coordinate 
+# Graph = ox.graph_from_point(
+#    (-73.1684031877857, 44.015402801899796),
+#    dist=2000, #this is in meters
+#    #dist_type="network",
+#    network_type="drive_service",
+# )
+# ox.plot_graph(Graph)
+
+# impute edge (driving) speeds and calculate edge traversal times
+#Graph = ox.add_edge_speeds(Graph)
+#Graph = ox.add_edge_travel_times(Graph)
 
 # Pass a Polygon to OSMNX
 # (e.g., the first element in the dataframe is a Polygon)
@@ -163,5 +189,3 @@ https://networkx.org/documentation/latest/auto_examples/geospatial/plot_delaunay
 https://networkx.org/documentation/latest/auto_examples/geospatial/plot_osmnx.html
 https://osmnx.readthedocs.io/en/stable/osmnx.html#module-osmnx.stats
 """
-#THE ISSUES: how do we create a graph from multiple starting points (multiple stations in 
-# a service zone or many hydrants in the same area)???
