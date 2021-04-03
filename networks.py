@@ -2,7 +2,7 @@
 
 import osmnx as ox
 import networkx as nx
-import geojson
+# import geojson
 import geopandas as gpd
 from shapely.geometry import Polygon
 from shapely.geometry import shape
@@ -16,8 +16,8 @@ Specify type of street network:
 'all'
 'all_private'
 """
-#1) Import the geojson file for zone polygons one line at a time
-#2) For each line, create the network and gather the ESN number
+#1) Import the geojson file for zone polygons one row at a time
+#2) For each row, create the network and gather the ESN number
 #3) Import the geojson file for station coords and locate the corresponding stations by ESN
 #4) Run network from point bounding it by the zone network
 """
@@ -35,12 +35,30 @@ for zone in zones:
     break
 """
 
+# Fetch "zone_polygons.geojson", pass a Polygon to OSMNX
+# (the first element in the dataframe is a Polygon)
 gdf = gpd.read_file("zone_polygons.geojson")
-shape_poly = gdf.unary_union
-print(type(shape_poly))
-#zone = gdf.loc[[0], 'geometry']
-# print(zone)
-# print(type(zone))
+first_poly = gdf['geometry'].loc[0]
+print(type(first_poly)) # <class 'shapely.geometry.polygon.Polygon'>
+G = ox.graph_from_polygon(first_poly, network_type='drive_service')
+ox.plot_graph(G)
+
+# Passing a MultiPolygon to OSMNX (the last row in the dataframe is one)
+one_multi = gdf['geometry'].iloc[-1]
+print(type(one_multi))
+G = ox.graph_from_polygon(one_multi, network_type='drive_service')
+ox.plot_graph(G)
+
+# i = 0
+# Iterate through geometry column of dataframe, passing all rows to OSMNX
+# for poly in gdf['geometry'].loc():
+#     print(type(poly))
+#     G = ox.graph_from_polygon(first_poly, network_type='drive_service')
+#     # ox.plot_graph(G) 
+#     if i == 3:
+#         break
+#     i += 1
+
 
 # #convert to gdf
 # polygon = gpd.GeoDataFrame(geometry=zone)
@@ -54,8 +72,8 @@ print(type(shape_poly))
 # #poly.to_file("zone_polygon.shp", driver='ESRI Shapefile')
 
 # #shape_file = "zone_polygon.shp"
-G = ox.graph_from_polygon(shape_poly, network_type='drive_service')
-ox.plot_graph(G)
+# G = ox.graph_from_polygon(shape_poly, network_type='drive_service')
+# ox.plot_graph(G)
 
 
 #Get street network from polygon using Geopandas
