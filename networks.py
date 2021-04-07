@@ -1,191 +1,160 @@
-#Playing around with OSMnx and Networkx
+"""
+BUILDING OFF CODE FROM network_analysis.py TO INCLUDE MULTIPLE STATIONS
+Creating the response time networks
+Based on code from https://towardsdatascience.com/how-to-calculate-travel-time-for-any-location-in-the-world-56ce639511f
+and https://github.com/gboeing/osmnx-examples/blob/7cb65dbd64b5923a6013a94b72585f27d7a0acfa/notebooks/13-isolines-isochrones.ipynb
+"""
 
 from produce_geojson import stations_to_geojson
 import osmnx as ox
 import networkx as nx
-# import geojson
 import geopandas as gpd
-from shapely.geometry import Polygon
-from shapely.geometry import shape
-ox.config(log_console=True, use_cache=True)
+from shapely.geometry import Polygon, Point, LineString
+import matplotlib.pyplot as plt
+from descartes import PolygonPatch
+# from IPython.display import IFrame
 
-"""
-Specify type of street network:
-'drive'
-'drive_service'
-'walk'
-'bike'
-'all'
-'all_private'
-"""
-#1) Import the geojson file for zone polygons one row at a time
-#2) For each row, create the network and gather the ESN number
-#3) Import the geojson file for station coords and locate the corresponding stations by ESN
-#4) Run network from point bounding it by the zone network
-"""
-gdf = gpd.read_file("zone_polygons.geojson")
-zones = gdf["geometry"]
-esn = gdf["ESN"]
-for zone in zones:
-    print(zone)
-    polygon = zone
-    #create the network from geometry
-    G = ox.graph_from_polygon(zone, network_type='drive_service')
-    ox.plot_graph(G)
-    #save the network to be used later
-    ox.save_graphml(G, filepath="./graph.graphml")
-    break
-"""
+ox.config(log_console=False, use_cache=True)
 
 # Fetch "zone_polygons.geojson"
 zones = gpd.read_file("zone_polygons.geojson") # Middlebury's zone polygon
 stations = gpd.read_file("fire_station_coords.geojson") # Both Middlebury Fire Station
 zone_geom = zones['geometry'].loc[0] # Get first element
-station_one_geom = stations['geometry'].loc[0]
-print(type(zone_geom))
-print(type(station_one_geom))
-print(station_one_geom)
 
-# transform the point geometry into a tuple
-station_tuple = (station_one_geom.y, station_one_geom.x)
-print(station_tuple)
+# 1 - Create a graph
+G = ox.graph_from_polygon(zone_geom, network_type='drive_service')
+# G = ox.graph_from_point(station_tuple, dist=10000, dist_type='network', network_type='all')
+# 2 - Create nodes geodataframe from Graph network (G)
+gdf_nodes = ox.graph_to_gdfs(G, edges=False)
 
-G=ox.graph_from_point(station_tuple, dist=3000, dist_type='network', network_type='drive_service')
-ox.plot_graph(G)
+# Create a list of station geometries
+station_nodes = []
+for i in range(len(stations['geometry'])-1):
+    station = stations['geometry'].loc[i]
+    station_tuple = (station.y, station.x)
+    station_of_interest = ox.get_nearest_node(G, point=station_tuple)
+    station_nodes.append(station_of_interest)
+    i+=1
 
-# impute edge (driving) speeds and calculate edge traversal times
-Graph = ox.add_edge_speeds(G)
-Graph = ox.add_edge_travel_times(G)
+# Pass in a few default speed values (km/hour)
+# to fill in edges with missing `maxspeed` from OSM
+hwy_speeds = {"residential": 40, 
+              "unclassified": 40,
+              "tertiary": 56, 
+              "secondary": 56, 
+              "primary": 80, 
+              "trunk": 56
+            }
+# # 25 mph, 35 mph, 50 mph
+   
+G = ox.add_edge_speeds(G, hwy_speeds)
 
-#G = ox.graph_from_polygon(zone_geom, network_type='drive_service')
-#ox.plot_graph(G)
+# For every edge, add a 'time' attribute in minutes.
+# This is based on 'length' (originally in meters, converted here to km) 
+# and 'speed_kph' (added to the edge dict by add_edge_speeds(),
+# and converted here to km/m).
+for _, _, _, data in G.edges(data=True, keys=True):
+    data["time"] = (data["length"] / 1000) / (data["speed_kph"] / 60) #km/m
+    print(data)
 
-# create the network analysis for a set distance around the fire station coordinate 
-# Graph = ox.graph_from_point(
-#    (-73.1684031877857, 44.015402801899796),
-#    dist=2000, #this is in meters
-#    #dist_type="network",
-#    network_type="drive_service",
-# )
-# ox.plot_graph(Graph)
+# 4 - Project a graph from lat-long to the UTM zone appropriate for its geographic location.
+G = ox.project_graph(G)
 
-# impute edge (driving) speeds and calculate edge traversal times
-#Graph = ox.add_edge_speeds(Graph)
-#Graph = ox.add_edge_travel_times(Graph)
+# Response time in minutes
+response_times = [2, 5, 8]
 
-# Pass a Polygon to OSMNX
-# (e.g., the first element in the dataframe is a Polygon)
+# 1 - get one color for each isochrone
+iso_colors = ox.plot.get_colors(n=len(response_times), cmap='Reds', start=0.3, return_hex=True)
+# 2 - color the nodes according to isochrone then plot the street network
+node_colors = {}
 
-# first_poly = gdf['geometry'].loc[0]
-# print(type(first_poly)) # <class 'shapely.geometry.polygon.Polygon'>
-# G = ox.graph_from_polygon(first_poly, network_type='drive_service')
-# ox.plot_graph(G)
+# Iterate over response times and possible colors
+# Create subgraphs with nodes within radius (using time attributes of edges rather than a spatial distance)
+# Associate nodes in the same subgraph to the same color
+for response_time, color in zip(sorted(response_times, reverse=True), iso_colors):
+    subgraph = nx.ego_graph(G, stations[0], radius=response_time, distance='time')
+    for node in subgraph.nodes():
+        node_colors[node] = color
 
-# Passing a MultiPolygon to OSMNX (the last row in the dataframe is one)
-# one_multi = gdf['geometry'].iloc[-1]
-# print(type(one_multi))
-# G = ox.graph_from_polygon(one_multi, network_type='drive_service')
-# ox.plot_graph(G)
+# Get list of possible node colors
+nc = [node_colors[node] if node in node_colors else 'none' for node in G.nodes()]
+# Get list of possible node sizes (i.e. whether or not we should display them)
+ns = [20 if node in node_colors else 0 for node in G.nodes()]
 
-# i = 0
-# Iterate through geometry column of dataframe, passing all rows to OSMNX
-# for poly in gdf['geometry'].loc():
-#     print(type(poly))
-#     G = ox.graph_from_polygon(first_poly, network_type='drive_service')
-#     # ox.plot_graph(G)
-#     if i == 3:
-#         break
-#     i += 1
-
-
-# #convert to gdf
-# polygon = gpd.GeoDataFrame(geometry=zone)
-# print(type(polygon))
-# print(shape_poly)
-
-# #conver to shapely polygon
-# poly = Polygon(polygon)
-# print(type(poly))
-
-# #poly.to_file("zone_polygon.shp", driver='ESRI Shapefile')
-
-# #shape_file = "zone_polygon.shp"
-# G = ox.graph_from_polygon(shape_poly, network_type='drive_service')
-# ox.plot_graph(G)
+fig, ax = ox.plot_graph(G, node_color=nc, node_size=ns, node_alpha=0.8, edge_linewidth=0.2,
+    edge_color="#999999")
 
 
-#Get street network from polygon using Geopandas
-##G = ox.graph_from_polygon(shapefile, network_type='drive_service')
-##ox.plot_graph(G)
+# make the isochrone polygons
+def make_polygons(Graph, station):
+    isochrone_polys = []
+    for response_time in sorted(response_times, reverse=True):
+        subgraph = nx.ego_graph(Graph, station, radius=response_time, distance='time')
+        node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
+        bounding_poly = gpd.GeoSeries(node_points).unary_union.convex_hull
+        isochrone_polys.append(bounding_poly)
+
+    return isochrone_polys
+
+polygons = []
+for i in range(len(station_nodes)-1):
+    iso_polygons = make_polygons(G, station_nodes[i])
+    polygons.append(iso_polygons)
+    i+=1
+
+# plot the network then add isochrones as colored descartes polygon patches
+fig, ax = ox.plot_graph(G, show=False, close=False, edge_color='k', edge_alpha=0.2, node_color='none')
+for polygon, fc in zip(polygons, iso_colors):
+    patch = PolygonPatch(polygon, fc=fc, ec='none', alpha=0.6, zorder=-1)
+    ax.add_patch(patch)
+plt.show()
+
+def make_iso_polys(G, edge_buff=25, node_buff=50, infill=False):
+    isochrone_polys = []
+    for response_time in sorted(response_times, reverse=True):
+        subgraph = nx.ego_graph(G, station_of_interest, radius=response_time, distance='time')
+        node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
+        nodes_gdf = gpd.GeoDataFrame({"id": list(subgraph.nodes)}, geometry=node_points)
+        nodes_gdf = nodes_gdf.set_index("id")
+
+        edge_lines = []
+        for n_fr, n_to in subgraph.edges():
+            f = nodes_gdf.loc[n_fr].geometry
+            t = nodes_gdf.loc[n_to].geometry
+            edge_lookup = G.get_edge_data(n_fr, n_to)[0].get("geometry", LineString([f, t]))
+            edge_lines.append(edge_lookup)
+
+        n = nodes_gdf.buffer(node_buff).geometry
+        e = gpd.GeoSeries(edge_lines).buffer(edge_buff).geometry
+        all_gs = list(n) + list(e)
+        new_iso = gpd.GeoSeries(all_gs).unary_union
+
+        # try to fill in surrounded areas so shapes will appear solid and
+        # blocks without white space inside them
+        if infill:
+            new_iso = Polygon(new_iso.exterior)
+        isochrone_polys.append(new_iso)
+    return isochrone_polys
 
 
-#Get street network from bounding box
-##G = ox.graph_from_bbox(37.79, 37.78, -122.41, -122.43, network_type='drive')
-##G_projected = ox.project_graph(G)
-##ox.plot_graph(G_projected)
-
-#Get street network from point
-##G = ox.graph_from_point((37.79, -122.41), dist=750, network_type='all')
-##ox.plot_graph(G)
-#You can input a certain network to the "street network from point or address" in order to 
-# find nodes within a certain distance of an address that are in the bounds of the inputted network
-# network from address, including only nodes within 1km along the network from the address
-
-#G = ox.graph_from_address(
-#    address="350 5th Ave, New York, NY",
-#    dist=1000,
-#    dist_type="network",
-#    network_type="drive",
-#)
-
-# you can project the network to UTM (zone calculated automatically)
-#G_projected = ox.project_graph(G)
-
-#PS. you can convert your graph to node and edge GeoPandas GeoDataFrames
-"""
-Saving files
-
-OSMnx can save the street network to disk as a GraphML file to work with 
-later in Gephi or networkx. Or it can save the network (such as this one, 
-for the New York urbanized area) as ESRI shapefiles or GeoPackages to work 
-with in any GIS
-"""
-# save graph to shapefile, geopackage, or graphml
-##ox.save_graph_shapefile(G, filepath="./graph_shapefile/")
-##ox.save_graph_geopackage(G, filepath="./graph.gpkg")
-##ox.save_graphml(G, filepath="./graph.graphml")
-
-"""
-I think we will want to do the following for response time network:
-1) import our fire station points
-2) import our service zones
-3) create and save street networks (we want this to be roads, service roads, and private roads?)
-    for each of the service zones
-4) figure out which fire stations lie within each service zone 
-5) create a graph from a point (fire station) where the inputted network is the service zone network
-    how do we deal with multiple stations in each service zone?
-    we might have to iterate over each of the fire stations, creating a graph for each and stitching them together
-"""
-
-"""
-I think we will want to do the following for hydrant network:
-1) import our hydrant points
-2) create and save street networks (we want this to be roads, service roads, and private roads?)
-    for each of the service zones - we do this just to make the calculations easier
-3) figure out which hydrants lie within each service zone 
-4) create a graph from a point (hydrant) where the inputted network is the service zone network
-    and the distance is xxxx (the distance I get from chief)
-"""
-#for hydrants, we could create polygons xx distance around a hydrant and perform the network analysis within those polygons and stitch together
-# ex. osmnx.utils_geo.bbox_from_point(point, dist=1000, project_utm=False, return_crs=False)
+isochrone_polys = make_iso_polys(G, edge_buff=25, node_buff=0, infill=True)
+fig, ax = ox.plot_graph(
+    G, show=False, close=False, edge_color="#999999", edge_alpha=0.2, node_size=0
+)
+for polygon, fc in zip(isochrone_polys, iso_colors):
+    patch = PolygonPatch(polygon, fc=fc, ec="none", alpha=0.7, zorder=-1)
+    ax.add_patch(patch)
+plt.show()
 
 """
-GOOD REFERENCES
-https://automating-gis-processes.github.io/2017/lessons/L7/network-analysis.html
-https://github.com/gboeing/osmnx-examples/tree/7cb65dbd64b5923a6013a94b72585f27d7a0acfa/notebooks
-https://networkx.org/documentation/latest/auto_examples/geospatial/plot_osmnx.html
-https://networkx.org/documentation/latest/auto_examples/geospatial/plot_delaunay.html 
-    *how to use multiple coordinates from a geometry column by putting them into an array using numpy
-https://networkx.org/documentation/latest/auto_examples/geospatial/plot_osmnx.html
-https://osmnx.readthedocs.io/en/stable/osmnx.html#module-osmnx.stats
+Questions for Joe:
+- Nodes are currently road intersections, not buildings
+- Convex vs concave hulls vs buffers
+- How to handle overlap?
+- Best way to 'export' the polygons together (into a layer?)?
+  Export as one vector layer of multiple polygons? Raster heat map? (rasters are pixel-based,
+  vectors are point-based / have nodes, edges and polygons)
+- ESN s
+
 """
+
