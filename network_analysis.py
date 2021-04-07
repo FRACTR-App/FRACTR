@@ -102,14 +102,14 @@ for response_time in sorted(response_times, reverse=True):
     poly_as_gdf = gpd.GeoSeries([bounding_poly])
     i += 1
     poly_as_gdf.to_file('poly{0}.geojson'.format(i), driver='GeoJSON')
-    
+    isochrone_polys.append(bounding_poly)
 
 # plot the network then add isochrones as colored descartes polygon patches
-# fig, ax = ox.plot_graph(G, show=False, close=False, edge_color='k', edge_alpha=0.2, node_color='none')
-# for polygon, fc in zip(isochrone_polys, iso_colors):
-#     patch = PolygonPatch(polygon, fc=fc, ec='none', alpha=0.6, zorder=-1)
-#     ax.add_patch(patch)
-# plt.show()
+fig, ax = ox.plot_graph(G, show=False, close=False, edge_color='k', edge_alpha=0.2, node_color='none')
+for polygon, fc in zip(isochrone_polys, iso_colors):
+    patch = PolygonPatch(polygon, fc=fc, ec='none', alpha=0.6, zorder=-1)
+    ax.add_patch(patch)
+plt.show()
 
 def make_iso_polys(G, edge_buff=25, node_buff=50, infill=False):
     isochrone_polys = []
