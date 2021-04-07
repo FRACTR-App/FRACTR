@@ -10,10 +10,7 @@ from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, req
 def hydrants_to_geojson(output_file_name, input_file_path):
     hydrant_path = input_file_path
     gdf = gpd.read_file(hydrant_path)
-    # print(gdf.columns)
-
     # hydrant_data = gdf[["COUNTY", "HYDRANTID", "HYDRANTTYPE", "FLOWRATE", "geometry"]]
-    # print(hydrant_data)
 
     hydrant_coords = gdf["geometry"]
     print(hydrant_coords)
@@ -27,19 +24,15 @@ def hydrants_to_geojson(output_file_name, input_file_path):
 def zones_to_geojson(output_file_name, input_file_path):
     zone_path = input_file_path
     gdf = gpd.read_file(zone_path)
-    # print(gdf.columns)
-
-    # zone_data = gdf[["COUNTY", "ESZID", "FIRE_AgencyId", "ESN", "geometry"]]
-    # print(zone_data)
+    # zone_data = gdf[["COUNTY", "FIRE", "ESZID", "FIRE_AgencyId", "ESN", "geometry"]]
 
     zone_polygons = gdf.loc[(gdf["ESN"] == 283),
         ["ESN", "geometry"]]
-    print(zone_polygons)
 
     print("Outputting %s.geojson..." % output_file_name)
     zone_polygons.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
 
-    return zone_polygons
+    return gdf
 
 
 # Creates a 1-column geojson file containing fire station coordinates and related information
@@ -52,7 +45,6 @@ def stations_to_geojson(output_file_name, input_file_path):
     station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION") & (gdf["ESN"] == 283),
         ["ESN", "geometry"]]
     print(station_coords)
-    # print(gdf.SITETYPE.unique())
     
     print("Outputting %s.geojson..." % output_file_name)
     station_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
