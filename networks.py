@@ -48,20 +48,21 @@ hwy_speeds = {"residential": 40,
 # # 25 mph, 35 mph, 50 mph
    
 G = ox.add_edge_speeds(G, hwy_speeds)
+G = ox.add_edge_travel_times(G)
 
 # For every edge, add a 'time' attribute in minutes.
-# This is based on 'length' (originally in meters, converted here to km) 
+# This is based on 'length' (originally in meters, converted here to km)
 # and 'speed_kph' (added to the edge dict by add_edge_speeds(),
 # and converted here to km/m).
-for _, _, _, data in G.edges(data=True, keys=True):
-    data["time"] = (data["length"] / 1000) / (data["speed_kph"] / 60) #km/m
-    print(data)
+# for _, _, _, data in G.edges(data=True, keys=True):
+#     data["time"] = (data["length"] / 1000) / (data["speed_kph"] / 60) #km/m
+#     print(data)
 
 # 4 - Project a graph from lat-long to the UTM zone appropriate for its geographic location.
 G = ox.project_graph(G)
 
-# Response time in minutes
-response_times = [2, 5, 8]
+# Response time in seconds
+response_times = [120, 300]
 
 # 1 - get one color for each isochrone
 iso_colors = ox.plot.get_colors(n=len(response_times), cmap='Reds', start=0.3, return_hex=True)
@@ -71,8 +72,8 @@ node_colors = {}
 # Iterate over response times and possible colors
 # Create subgraphs with nodes within radius (using time attributes of edges rather than a spatial distance)
 # Associate nodes in the same subgraph to the same color
-for response_time, color in zip(sorted(response_times, reverse=True), iso_colors):
-    subgraph = nx.ego_graph(G, stations[0], radius=response_time, distance='time')
+for trip_time, color in zip(sorted(response_times, reverse=True), iso_colors):
+    subgraph = nx.ego_graph(G, station_of_interest, radius=trip_time, distance='travel_time')
     for node in subgraph.nodes():
         node_colors[node] = color
 
@@ -86,25 +87,21 @@ fig, ax = ox.plot_graph(G, node_color=nc, node_size=ns, node_alpha=0.8, edge_lin
 
 
 # make the isochrone polygons
-def make_polygons(Graph, station):
-    isochrone_polys = []
-    for response_time in sorted(response_times, reverse=True):
-        subgraph = nx.ego_graph(Graph, station, radius=response_time, distance='time')
-        node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
-        bounding_poly = gpd.GeoSeries(node_points).unary_union.convex_hull
-        isochrone_polys.append(bounding_poly)
+i = 0
+isochrone_polys = []
+for response_time in sorted(response_times, reverse=True):
+    subgraph = nx.ego_graph(G, station_of_interest, radius=response_time, distance='travel_time')
+    node_points = [Point((data['lon'], data['lat'])) for node, data in subgraph.nodes(data=True)]
 
-    return isochrone_polys
-
-polygons = []
-for i in range(len(station_nodes)-1):
-    iso_polygons = make_polygons(G, station_nodes[i])
-    polygons.append(iso_polygons)
-    i+=1
+    bounding_poly = gpd.GeoSeries(node_points).unary_union.convex_hull
+    poly_as_gdf = gpd.GeoSeries([bounding_poly])
+    i += 1
+    poly_as_gdf.to_file('poly{0}.geojson'.format(i), driver='GeoJSON')
+    isochrone_polys.append(bounding_poly)
 
 # plot the network then add isochrones as colored descartes polygon patches
 fig, ax = ox.plot_graph(G, show=False, close=False, edge_color='k', edge_alpha=0.2, node_color='none')
-for polygon, fc in zip(polygons, iso_colors):
+for polygon, fc in zip(isochrone_polys, iso_colors):
     patch = PolygonPatch(polygon, fc=fc, ec='none', alpha=0.6, zorder=-1)
     ax.add_patch(patch)
 plt.show()
@@ -145,16 +142,4 @@ for polygon, fc in zip(isochrone_polys, iso_colors):
     patch = PolygonPatch(polygon, fc=fc, ec="none", alpha=0.7, zorder=-1)
     ax.add_patch(patch)
 plt.show()
-
-"""
-Questions for Joe:
-- Nodes are currently road intersections, not buildings
-- Convex vs concave hulls vs buffers
-- How to handle overlap?
-- Best way to 'export' the polygons together (into a layer?)?
-  Export as one vector layer of multiple polygons? Raster heat map? (rasters are pixel-based,
-  vectors are point-based / have nodes, edges and polygons)
-- ESN s
-
-"""
 

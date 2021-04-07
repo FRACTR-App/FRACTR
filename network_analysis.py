@@ -96,12 +96,17 @@ i = 0
 isochrone_polys = []
 for response_time in sorted(response_times, reverse=True):
     subgraph = nx.ego_graph(G, station_of_interest, radius=response_time, distance='travel_time')
-    node_points = [Point((data['lon'], data['lat'])) for node, data in subgraph.nodes(data=True)]
+    # using lat, long to make polygons so we are able to export to geojson file with correct projection
+    node_points_coords = [Point((data['lon'], data['lat'])) for node, data in subgraph.nodes(data=True)]
 
-    bounding_poly = gpd.GeoSeries(node_points).unary_union.convex_hull
-    poly_as_gdf = gpd.GeoSeries([bounding_poly])
+    bounding_poly_coords = gpd.GeoSeries(node_points_coords).unary_union.convex_hull
+    poly_as_gdf = gpd.GeoSeries([bounding_poly_coords])
     i += 1
     poly_as_gdf.to_file('poly{0}.geojson'.format(i), driver='GeoJSON')
+    
+    # using the OSMnx projection x, y so that we are able to plot using matplotlib in this file
+    node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
+    bounding_poly = gpd.GeoSeries(node_points).unary_union.convex_hull
     isochrone_polys.append(bounding_poly)
 
 # plot the network then add isochrones as colored descartes polygon patches
@@ -114,7 +119,7 @@ plt.show()
 def make_iso_polys(G, edge_buff=25, node_buff=50, infill=False):
     isochrone_polys = []
     for response_time in sorted(response_times, reverse=True):
-        subgraph = nx.ego_graph(G, station_of_interest, radius=response_time, distance='time')
+        subgraph = nx.ego_graph(G, station_of_interest, radius=response_time, distance='travel_time')
         node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
         nodes_gdf = gpd.GeoDataFrame({"id": list(subgraph.nodes)}, geometry=node_points)
         nodes_gdf = nodes_gdf.set_index("id")
@@ -169,6 +174,4 @@ Questions for Joe:
 - Follow-up: how can one create toggleable layers? Is this possible from geojson files?
   Do all features (here: polygons) from the same geojson file considered to be in the
   same LayerGroup?
-
 """
-
