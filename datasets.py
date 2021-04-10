@@ -4,6 +4,7 @@ import json
 API_HYDRANTS_PATH = "hydrants.json"
 API_ZONES_PATH = "zones.json"
 API_STRUCTURES_PATH = "structures.json"
+API_VERMONT_PATH = "vermont.json"
 
 # Downloads data as JSON files from the Vermont Geoportal REST API
 def request_API_data():
@@ -41,3 +42,14 @@ def request_API_data():
             json.dump(structures_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve structure data")
+
+    # make the request for state of Vermont polygon from VT Geoportal
+    r = requests.get('https://opendata.arcgis.com/datasets/ad7e257457364c71a050f9291eafc806_31.geojson')
+    if not(r.raise_for_status()): 
+        # Create the json object
+        vermont_state_data = r.json()
+        # Write the object to file.
+        with open(API_VERMONT_PATH,'w') as jsonFile:
+            json.dump(vermont_state_data, jsonFile)
+    else:
+        print("An error occurred while trying to retrieve Vermont state data")

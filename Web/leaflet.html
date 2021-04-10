@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <head>
     <meta charset="utf-8" />
+    <?xml version="1.0" encoding="UTF-8"?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
    crossorigin=""/>
    
     <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+    <script src="/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/poly1.js"></script>
 
     <!-- Make sure you put this AFTER Leaflet's CSS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
@@ -15,7 +17,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 </head>
 <body>
-    <div id="mapid" style="height: 750px;"></div>
+    <div id="mapid" style="height: 650px;"></div>
     <script>
         var mymap = L.map('mapid').setView([44, -72], 8);
         L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -24,26 +26,56 @@
             id: 'mapbox/streets-v11',
             tileSize: 512,
             zoomOffset: -1,
-            accessToken: 'YOUR-MAPBOX-API-KEY-HERE'
+            accessToken: 'pk.eyJ1IjoiamNhbWJlZm9ydCIsImEiOiJja2x6Ym4xaGQwOWUxMnVyM3J2aW54bXhuIn0.vIUQw48WSxIujl74dYNqkA'
         }).addTo(mymap);
-
+        
         function polystyle(feature) {
+            return {
+                fillColor: 'red',
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: .8
+            }
+        }
+
+        function polystyle2(feature) {
             return {
                 fillColor: 'blue',
                 weight: 2,
                 opacity: 1,
                 color: 'white',
-                fillOpacity: 0.7
+                fillOpacity: .5
             }
         }
 
-        let zones_path = "PATH_TO_GEO_JSON.geojson"
-        var zones = L.geoJSON( null, {style:polystyle} ).addTo(mymap);
+        let poly2_path = "/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/poly2.geojson";
+        let poly5_path = "/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/poly5.geojson";
+        let stations_path = "/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/midd_station.geojson";
 
-        $.getJSON(zones_path, function(data) {
-            zones.addData(data);
+        var poly2 = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
+        var poly5 = L.geoJSON(null, {style:polystyle2} ).addTo(mymap);
+        var stations = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
+
+        // Use JQuery to import the geoJSON file
+        $.getJSON(poly2_path, function(data) {
+            poly2.setStyle(polystyle);
+            poly2.addData(data);
         });
-        zones.addTo(mymap);
+
+        $.getJSON(poly5_path, function(data) {
+            poly5.setStyle(polystyle2);
+            poly5.addData(data);
+        });
+
+        $.getJSON(stations_path, function(data) {
+            stations.setStyle(polystyle);
+            stations.addData(data);
+        });
+
+        poly2.addTo(mymap);
+        poly5.addTo(mymap);
+        stations.addTo(mymap);
 
     </script>
 

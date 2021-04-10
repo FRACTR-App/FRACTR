@@ -1,6 +1,6 @@
 import geopandas as gpd
 import osmnx as ox
-from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, request_API_data
+from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, API_VERMONT_PATH, request_API_data
 
 # Middlebury ESN == 283
 
@@ -24,7 +24,7 @@ def hydrants_to_geojson(output_file_name, input_file_path):
 def zones_to_geojson(output_file_name, input_file_path):
     zone_path = input_file_path
     gdf = gpd.read_file(zone_path)
-    # zone_data = gdf[["COUNTY", "FIRE", "ESZID", "FIRE_AgencyId", "ESN", "geometry"]]
+    # zone_polygons = gdf[["ESN", "geometry"]]
 
     zone_polygons = gdf.loc[(gdf["ESN"] == 283),
         ["ESN", "geometry"]]
@@ -42,13 +42,31 @@ def stations_to_geojson(output_file_name, input_file_path):
     structure_data = input_file_path
     gdf = gpd.read_file(structure_data)
     
-    station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION") & (gdf["ESN"] == 283),
-        ["ESN", "geometry"]]
-    print(station_coords)
+    # station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION"),
+        # ["ESN", "geometry"]]
+    # station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION") & (gdf["ESN"] == 283),
+    #     ["ESN", "geometry"]]
     
+    station_coords = gdf.loc[gdf["ESN"] == 283,
+        ["ESN", "geometry"]]
+
     print("Outputting %s.geojson..." % output_file_name)
     station_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
     return station_coords
+
+
+# Creates a 1-column geojson file containing Vermont state polygon
+# from a json file collected from OpenDataSoft API
+# Returns the GeoDataFrame (used to generate the output .geojson)
+def vermont_to_geojson(output_file_name, input_file_path):
+    vermont_data = input_file_path
+    gdf = gpd.read_file(vermont_data)
+    vermont_coords = gdf['geometry']
+    
+    print("Outputting %s.geojson..." % output_file_name)
+    vermont_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
+    return vermont_coords
+
 
 # Creates a geojson file that includes the merged service zone and fire station index
 # This does not merge both of the geometries, instead it keeps the zone geometry and the station index
@@ -60,7 +78,6 @@ def merged_to_geojson(output_file_name, file_path_1, file_path_2):
 
     #merge the dataframes
     merged = gpd.sjoin(gdf_zone, gdf_station, how="inner", op="intersects")
-    print(merged)
     
     print("Outputting %s.geojson..." % output_file_name)
     merged.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
@@ -77,8 +94,9 @@ if __name__ == "__main__":
     # output geojson files
     
     # hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
-    zones_to_geojson("zone_polygons", API_ZONES_PATH)
-    stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
+    # zones_to_geojson("midd_zone", API_ZONES_PATH)
+    stations_to_geojson("midd_station", "fire_station_coords.geojson")
+    # vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
     # merged = merged_to_geojson("merged_zones_stations", 'zone_polygons.geojson', 'fire_station_coords.geojson')
     # print(merged)
 
