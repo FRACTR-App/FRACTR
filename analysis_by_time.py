@@ -9,15 +9,16 @@ import networkx as nx
 import geopandas as gpd
 from shapely.geometry import Point
 
-ox.config(log_console=False, use_cache=True)  
+ox.config(log_console=True, use_cache=True)  
 
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
 
-    # 1 - Create a graph based on a drive_service (all roads including service roads) road network
+    # 1 - Create a graph
     G = ox.graph_from_polygon(bounding_zone, network_type='drive_service')
+    # G = ox.graph_from_point(station_tuple, dist=10000, dist_type='network', network_type='all')
 
-    # 4 - Project the graph from lat-long to the UTM zone appropriate for its geographic location.
+    # 4 - Project a graph from lat-long to the UTM zone appropriate for its geographic location.
     G = ox.project_graph(G)
 
     # 2 - Create nodes geodataframe from Graph network (G)
@@ -41,23 +42,27 @@ def make_graph(bounding_zone):
 
 
 # Returns a GeoDataFrame containing polygon geometries and a response time column
-def compute_subgraphs(G, response_times, station):
+def compute_subgraphs(G, stations, response_time):
     
     # initialize the geodataframe
-    station_polygons = gpd.GeoDataFrame()
-    
-    # Fetch the station's nearest node
-    station_tuple = (station.y, station.x)
-    station_node = ox.get_nearest_node(G, point=station_tuple, method='euclidean')
-    print(station_node)
-    print(station_tuple)
+    polygons = gpd.GeoDataFrame()
 
-    # Iterate over response times bins for that station
-    for i in range(len(response_times)):
-        response_time = response_times[i]
+    # Iterate over all stations
+    for i in range(len(stations)):
+        # Fetch a station coordinates
+        station = stations['geometry'].loc[i]
+        station_tuple = (station.y, station.x)
+        # print(station_tuple)
+        # point = gpd.GeoSeries(station_tuple, crs='epsg:4326')
+        # point = point.to_crs(G.graph['crs'])
+
+        # Fetch the station's nearest node
+        station_node = ox.get_nearest_node(G, point=station_tuple, method='euclidean')
+        print(station_node)
 
         # Create the subgraph for the station and the response time
         subgraph = nx.ego_graph(G, station_node, radius=response_time, distance='travel_time')
+        # using lat, long to make polygons
 
         node_points_coords = [Point((data['lon'], data['lat'])) for node, data in subgraph.nodes(data=True)]
 
@@ -70,11 +75,12 @@ def compute_subgraphs(G, response_times, station):
         # Add the response time column
         poly_as_gdf['response_time'] = response_time
         
-        # Append the polygon for that station to our GeoDataFrame
-        station_polygons = station_polygons.append(poly_as_gdf)
+        # Append the polygon for that station to our polygons GeoDataFrame
+        polygons = polygons.append(poly_as_gdf)
 
-    # Return the GeoDataFrame containing polygon bins for the station
-    return station_polygons
+    # Return the polygons geodataframe
+    # print(polygons)
+    return polygons
 
 
 ########################################
@@ -85,8 +91,8 @@ if __name__ == "__main__":
     zones = gpd.read_file("midd_zone.geojson")
     stations = gpd.read_file("midd_station.geojson")
     
-    # bounding_zone = zones['geometry'].loc[0] # Get first zone element
-    bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
+    bounding_zone = zones['geometry'].loc[0] # Get first zone element
+    #bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
 
     G = make_graph(bounding_zone)
     
@@ -95,38 +101,19 @@ if __name__ == "__main__":
 
     # Response time in seconds
     response_times = [120, 300]
+    geo_names = ["poly2", "poly5"]
 
-    # List of dataframes for each response time
-    gdf_list = []
-
-    # Initialize as many GeoDataFrames as there are response time bins
-    # Store these new GeoDataFrames in the gdf_list array.
-    for i in range(len(response_times)):
-        gdf_list.append(gpd.GeoDataFrame())
-
-    # iterate over every station
-    for i in range(len(stations)): # and fetch all applicable response times
-
-        # Select the station Point object to be passed as a param to compute_subgraphs()
-        station_of_interest = stations['geometry'].loc[i]
+    # for i in range(len(stations['geometry'])): # iterate over every station
+    for i in range(len(response_times)): # and over every response time
 
         # Returns a GeoDataFrame with columns "response_time" and "geometry"
-        # where the geometry column contains the response time polygons
-        station_gdf = compute_subgraphs(G, response_times, station_of_interest)
+        # where the geometry column contains the polygons for the
+        # response time bin passed as an input
+        response_gdf = compute_subgraphs(G, stations, response_times[i])
+        # print(response_gdf)
 
-        # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
-        for j in range(len(response_times)):
-            row = station_gdf.loc[
-                (station_gdf['response_time'] == response_times[j]), 
-                ['response_time', 'geometry']
-            ]
-
-            gdf_list[j] = gdf_list[j].append(row)
-
-    # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
-    for i in range(len(gdf_list)):
-        response_min = int(response_times[i]/60)
-        gdf_list[i].to_file("{0}.geojson".format(str(response_min)), driver="GeoJSON")
+        # Convert the gdf to geojson
+        response_gdf.to_file("{0}.geojson".format(geo_names[i]), driver="GeoJSON")
 
 
 ########################################
