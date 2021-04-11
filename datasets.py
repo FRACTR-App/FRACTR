@@ -19,7 +19,6 @@ def request_API_data():
     else:
         print("An error occurred while trying to retrieve hydrant data")
 
-
     # make the request for E-911 service zone data from VT Geoportal
     r = requests.get('https://opendata.arcgis.com/datasets/777ccbd85d8f4047906e37b0d16bf1e1_28.geojson')
     if not(r.raise_for_status()):
@@ -30,7 +29,6 @@ def request_API_data():
             json.dump(zone_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve service zone data")
-
 
     # make the request for E-911 structure data from VT Geoportal
     r = requests.get('https://opendata.arcgis.com/datasets/7a393abbbaa941449630361d9fd153c4_29.geojson')

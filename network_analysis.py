@@ -10,22 +10,21 @@ import networkx as nx
 import geopandas as gpd
 from shapely.geometry import Point
 
-ox.config(log_console=False, use_cache=True)  
+ox.config(log_console=False, use_cache=True)
+
+WEB_DIR = "/var/www/html/"
 
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
 
-    # 1 - Create a graph based on a drive_service (all roads including service roads) road network
+    # Create a graph based on a drive_service (all roads including service roads) road network
     G = ox.graph_from_polygon(bounding_zone, network_type='drive_service')
 
-    # 4 - Project the graph from lat-long to the UTM zone appropriate for its geographic location.
+    # Project the graph from lat-long to the UTM zone appropriate for its geographic location.
     G = ox.project_graph(G)
 
-    # 2 - Create nodes geodataframe from Graph network (G)
-    gdf_nodes = ox.graph_to_gdfs(G, edges=False)
-
-    # Pass in a few default speed values (km/hour)
-    # to fill in edges with missing `maxspeed` from OSM
+    # Pass in default speed values (km/hour) to fill in edges from Open Street Maps
+    # with missing `maxspeed` values
     hwy_speeds = {"residential": 40, 
                 "unclassified": 40,
                 "tertiary": 56, 
@@ -82,11 +81,10 @@ def compute_subgraphs(G, response_times, station):
 
 if __name__ == "__main__":
     
-    # Read in data
-    zones = gpd.read_file("midd_zone.geojson")
-    stations = gpd.read_file("midd_station.geojson")
+    # Read in station coordinate data
+    stations = gpd.read_file("fire_station_coords.geojson")
     
-    # bounding_zone = zones['geometry'].loc[0] # Get first zone element
+    # Read in the bounding zone to be used for the graph
     bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
 
     # Store the Vermont graph in a .graphml file so we don't need to recompute
@@ -96,7 +94,6 @@ if __name__ == "__main__":
         ox.save_graphml(G, "vermont_graph.graphml")
     else:
         G = ox.load_graphml("vermont_graph.graphml")
-
     
     # Project the station nodes to the same CRS as that of the Graph
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
@@ -128,13 +125,12 @@ if __name__ == "__main__":
                 (station_gdf['response_time'] == response_times[j]), 
                 ['response_time', 'geometry']
             ]
-
             gdf_list[j] = gdf_list[j].append(row)
 
     # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
         response_min = int(response_times[i]/60)
-        gdf_list[i].to_file("{0}.geojson".format(str(response_min)), driver="GeoJSON")
+        gdf_list[i].to_file("%s.geojson" % (WEB_DIR + str(response_min)), driver="GeoJSON")
 
 
 ########################################

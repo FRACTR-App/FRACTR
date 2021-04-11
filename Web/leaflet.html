@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+    <script>var web_dir = "/var/www/html/"</script>
     <meta charset="utf-8" />
     <?xml version="1.0" encoding="UTF-8"?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
@@ -7,7 +8,6 @@
    crossorigin=""/>
    
     <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
-    <script src="/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/poly1.js"></script>
 
     <!-- Make sure you put this AFTER Leaflet's CSS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
@@ -49,9 +49,9 @@
             }
         }
 
-        let poly2_path = "/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/2.geojson";
-        let poly5_path = "/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/5.geojson";
-        let stations_path = "/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/midd_station.geojson";
+        let poly2_path = "2.geojson";
+        let poly5_path = "5.geojson";
+        let stations_path = "midd_station.geojson";
 
         var poly2 = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
         var poly5 = L.geoJSON(null, {style:polystyle2} ).addTo(mymap);
