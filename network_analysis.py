@@ -4,6 +4,7 @@ Based on code from https://towardsdatascience.com/how-to-calculate-travel-time-f
 and https://github.com/gboeing/osmnx-examples/blob/7cb65dbd64b5923a6013a94b72585f27d7a0acfa/notebooks/13-isolines-isochrones.ipynb
 """
 
+import os
 import osmnx as ox
 import networkx as nx
 import geopandas as gpd
@@ -88,7 +89,14 @@ if __name__ == "__main__":
     # bounding_zone = zones['geometry'].loc[0] # Get first zone element
     bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
 
-    G = make_graph(bounding_zone)
+    # Store the Vermont graph in a .graphml file so we don't need to recompute
+    # it every time from the geoJson
+    if not os.path.exists("vermont_graph.graphml"):
+        G = make_graph(bounding_zone)
+        ox.save_graphml(G, "vermont_graph.graphml")
+    else:
+        G = ox.load_graphml("vermont_graph.graphml")
+
     
     # Project the station nodes to the same CRS as that of the Graph
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
