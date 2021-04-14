@@ -15,17 +15,13 @@ def hydrants_to_geojson(output_file_name, input_file_path):
     print("Outputting %s.geojson..." % output_file_name)
     hydrant_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
 
-# Creates a 1-column geojson file containing only the emergency zone polygon coordinates
+# Creates a 2-column geojson file containing the emergency zone polygon coordinates and ESN number
 # from a json file collected from the Vermont Geoportal API
 # Returns the GeoDataFrame (used to generate the output .geojson)
 def zone_to_geojson(output_file_name, input_file_path):
     zone_path = input_file_path
     gdf = gpd.read_file(zone_path)
-    zone_polygons = gdf["geometry"]
-
-    # Testing purposes
-    # zone_polygons = gdf.loc[(gdf["ESN"] == 283),
-        # ["ESN", "geometry"]]
+    zone_polygons = gdf[["ESN", "geometry"]]
 
     print("Outputting %s.geojson..." % output_file_name)
     zone_polygons.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
@@ -76,6 +72,8 @@ if __name__ == "__main__":
 
     # Create new GEOJSON files by filtering through JSON data for relevant columns,
     # output geojson files
-    stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
-    # zone_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
+    #stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
+    #vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
+    zone_to_geojson("zone_polygons", API_ZONES_PATH)
+    
     
