@@ -73,6 +73,10 @@
             stations.setStyle(polystyle);
             stations.addData(data);
         });
+        
+        stations.bindPopup(function (layer) {
+            return layer.feature.properties.TOWNNAME;
+        })
 
         baseMap.addTo(mymap);
         poly2.addTo(mymap);
@@ -81,7 +85,8 @@
 
         var overlays = {
             "2 minutes": poly2,
-            "5 minutes": poly5
+            "5 minutes": poly5,
+            "Stations": stations
         }
 
         L.control.layers(null, overlays).addTo(mymap);
