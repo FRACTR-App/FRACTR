@@ -51,13 +51,25 @@
             }
         }
 
+        function polystyle3(feature) {
+            return {
+                fillColor: 'red',
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: .1
+            }
+        }
+
         let poly2_path = web_dir.concat("2.geojson");
         let poly5_path = web_dir.concat("5.geojson");
         let stations_path = web_dir.concat("fire_station_coords.geojson");
+        let zones_path = web_dir.concat("zone_polygons.geojson");
 
         var poly2 = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
         var poly5 = L.geoJSON(null, {style:polystyle2} ).addTo(mymap);
         var stations = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
+        var zones = L.geoJSON(null, {style:polystyle3} );
 
         // Use JQuery to import the geoJSON file
         $.getJSON(poly2_path, function(data) {
@@ -74,6 +86,11 @@
             stations.setStyle(polystyle);
             stations.addData(data);
         });
+
+        $.getJSON(zones_path, function(data) {
+            zones.setStyle(polystyle3);
+            zones.addData(data);
+        });
         
         stations.bindPopup(function (layer) {
             return layer.feature.properties.TOWNNAME;
@@ -87,7 +104,8 @@
         var overlays = {
             "2 minutes": poly2,
             "5 minutes": poly5,
-            "Stations": stations
+            "Stations": stations,
+            "ESNs": zones
         }
 
         L.control.layers(null, overlays).addTo(mymap);
