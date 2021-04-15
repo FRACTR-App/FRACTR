@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
     <title>Smoke n' Maps</title>
-    <script>var web_dir = "/var/www/html/"</script>
+    <!-- <script>var web_dir = "/var/www/html/"</script> -->
     <meta charset="utf-8" />
     <?xml version="1.0" encoding="UTF-8"?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
@@ -61,10 +61,10 @@
             }
         }
 
-        let poly2_path = web_dir.concat("2.geojson");
-        let poly5_path = web_dir.concat("5.geojson");
-        let stations_path = web_dir.concat("fire_station_coords.geojson");
-        let zones_path = web_dir.concat("zone_polygons.geojson");
+        let poly2_path = "2.geojson";
+        let poly5_path = "5.geojson";
+        let stations_path = "fire_station_coords.geojson";
+        let zones_path = "zone_polygons.geojson";
 
         var poly2 = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
         var poly5 = L.geoJSON(null, {style:polystyle2} ).addTo(mymap);
