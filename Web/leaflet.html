@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <head>
-    <script>var web_dir = "/var/www/html/"</script>
+    <title>Smoke n' Maps</title>
+    <!-- <script>var web_dir = "/var/www/html/"</script> -->
     <meta charset="utf-8" />
     <?xml version="1.0" encoding="UTF-8"?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
@@ -17,12 +18,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 </head>
 <body>
-    <div id="mapid" style="height: 650px;"></div>
+    <div id="mapid" style="height: 98vh; width: 99vw"></div>
     <script>
         var mymap = L.map('mapid').setView([44, -72], 8);
         
         var baseMap = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>, Data from <a href="https://geodata.vermont.gov/">Vermont GeoData Portal</a>',
             maxZoom: 18,
             id: 'mapbox/streets-v11',
             tileSize: 512,
@@ -50,13 +51,25 @@
             }
         }
 
-        let poly2_path = web_dir.concat("2.geojson");
-        let poly5_path = web_dir.concat("5.geojson");
-        let stations_path = web_dir.concat("fire_station_coords.geojson");
+        function polystyle3(feature) {
+            return {
+                fillColor: 'red',
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: .1
+            }
+        }
+
+        let poly2_path = "2.geojson";
+        let poly5_path = "5.geojson";
+        let stations_path = "fire_station_coords.geojson";
+        let zones_path = "zone_polygons.geojson";
 
         var poly2 = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
         var poly5 = L.geoJSON(null, {style:polystyle2} ).addTo(mymap);
         var stations = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
+        var zones = L.geoJSON(null, {style:polystyle3} );
 
         // Use JQuery to import the geoJSON file
         $.getJSON(poly2_path, function(data) {
@@ -74,6 +87,15 @@
             stations.addData(data);
         });
 
+        $.getJSON(zones_path, function(data) {
+            zones.setStyle(polystyle3);
+            zones.addData(data);
+        });
+        
+        stations.bindPopup(function (layer) {
+            return layer.feature.properties.TOWNNAME;
+        })
+
         baseMap.addTo(mymap);
         poly2.addTo(mymap);
         poly5.addTo(mymap);
@@ -81,7 +103,9 @@
 
         var overlays = {
             "2 minutes": poly2,
-            "5 minutes": poly5
+            "5 minutes": poly5,
+            "Stations": stations,
+            "Emergency Service Zones": zones
         }
 
         L.control.layers(null, overlays).addTo(mymap);
