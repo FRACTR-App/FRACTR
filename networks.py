@@ -1,4 +1,6 @@
 """
+This is a dump file that is used for brainstorming
+
 BUILDING OFF CODE FROM network_analysis.py TO INCLUDE MULTIPLE STATIONS
 Creating the response time networks
 Based on code from https://towardsdatascience.com/how-to-calculate-travel-time-for-any-location-in-the-world-56ce639511f
@@ -12,17 +14,45 @@ import geopandas as gpd
 from shapely.geometry import Polygon, Point, LineString
 import matplotlib.pyplot as plt
 from descartes import PolygonPatch
+from tqdm import tqdm
 # from IPython.display import IFrame
 
 ox.config(log_console=False, use_cache=True)
 
 # Fetch "zone_polygons.geojson"
-zones = gpd.read_file("zone_polygons.geojson") # Middlebury's zone polygon
-stations = gpd.read_file("fire_station_coords.geojson") # Both Middlebury Fire Station
-zone_geom = zones['geometry'].loc[0] # Get first element
+zones = gpd.read_file("midd_zone.geojson") # Middlebury's zone polygon
+stations = gpd.read_file("midd_station.geojson") # Both Middlebury Fire Station
+#zone_geom = zones['geometry'].loc[0] # Get first element
+station = stations['geometry'].loc[0]
+print(station)
+esn = stations['ESN'].loc[0]
+print(type(esn))
+print(esn)
+#zone = zones.loc[zones['ESN'] == esn, ['geometry']]
+#print(zone)
+#zone_coords = zones['geometry'].loc[0]
+#print(zone_geom)
+zone_coords = zones.loc[zones["ESN"] == esn,
+         ["geometry"]]
+zone_final = zone_coords['geometry'].loc[0]
+print(zone_final)
+zone_final = ox.projection.project_gdf(zone_final, to_crs=G.graph['crs'], to_latlong=False)
+print(zone_final)
+# print(zone_coords)
+# Project the station nodes to the same CRS as that of the Graph
+    #stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
 
+#print(zone_poly)
+        #polygon_gs = gpd.GeoSeries(zone_poly, crs='epsg:4326')
+        # Project the station nodes to the same CRS as that of the Graph
+        #zone_proj = ox.projection.project_gdf(polygon_gs, to_crs=G.graph['crs'], to_latlong=False)
+        #print(zone_proj)
+        # Convert geoseries to geodataframe
+        #zone_gdf = gpd.GeoDataFrame(polygon_gs)
+        #zone_final = zone_gdf["geometry"].loc[0]
+        #print(zone_final)
 # 1 - Create a graph
-G = ox.graph_from_polygon(zone_geom, network_type='drive_service')
+G = ox.graph_from_polygon(zone_final, network_type='drive_service')
 # G = ox.graph_from_point(station_tuple, dist=10000, dist_type='network', network_type='all')
 # 2 - Create nodes geodataframe from Graph network (G)
 gdf_nodes = ox.graph_to_gdfs(G, edges=False)

@@ -8,7 +8,8 @@ import os
 import osmnx as ox
 import networkx as nx
 import geopandas as gpd
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon, shape
+from tqdm import tqdm
 
 ox.config(log_console=False, use_cache=True)
 
@@ -49,8 +50,6 @@ def compute_subgraphs(G, response_times, station):
     # Fetch the station's nearest node
     station_tuple = (station.y, station.x)
     station_node = ox.get_nearest_node(G, point=station_tuple, method='euclidean')
-    print(station_node)
-    print(station_tuple)
 
     # Iterate over response times bins for that station
     for i in range(len(response_times)):
@@ -83,12 +82,14 @@ if __name__ == "__main__":
     
     # Read in station coordinate data
     stations = gpd.read_file("fire_station_coords.geojson")
+    #stations = gpd.read_file("midd_station.geojson")
     
     # Read in the bounding zone to be used for the graph
     bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
 
     # Read in the emergency service zones to be used for subgraphs
     esn_zones = gpd.read_file("zone_polygons.geojson")
+    #esn_zones = gpd.read_file("midd_zone.geojson")
 
     # Store the Vermont graph in a .graphml file so we don't need to recompute
     # it every time from the geoJson
@@ -107,34 +108,48 @@ if __name__ == "__main__":
     # List of dataframes for each response time
     gdf_list = []
 
+    #List of station ESNs where the station's EMZ is not valid
+    poly_not_valid = []
+
     # Initialize as many GeoDataFrames as there are response time bins
     # Store these new GeoDataFrames in the gdf_list array.
     for i in range(len(response_times)):
         gdf_list.append(gpd.GeoDataFrame())
 
     # iterate over every station
-    for i in range(len(stations)): # and fetch all applicable response times
+    for i in tqdm(range(len(stations))): # and fetch all applicable response times
 
         # Select the station Point object to be passed as a param to compute_subgraphs()
         station_of_interest = stations['geometry'].loc[i]
+        #station_of_interest = stations.loc[i]
+        #print(station_of_interest)
+
 
         # Create the graph for the station's corresponding emergency service zone using the esn
         station_esn = stations['ESN'].loc[i]
-        esn_bounding_zone = esn_zones.loc[esn_zones['ESN'] == station_esn]
+        #print(station_esn)
+        zone_coords = esn_zones.loc[esn_zones["ESN"] == station_esn, ["ESN", "geometry"]]
+        print(zone_coords)
+        zone_poly = zone_coords["geometry"].iloc[0]
+    
+        # Create the graph for the emergency service zone if the polygon is valid
+        if not(zone_poly.is_valid):
+            poly_not_valid.append(station_esn)
+            continue
+        else:
+            esn_graph = make_graph(zone_poly)
 
-        esn_graph = make_graph(esn_bounding_zone)
+            # Returns a GeoDataFrame with columns "response_time" and "geometry"
+            # where the geometry column contains the response time polygons
+            station_gdf = compute_subgraphs(esn_graph, response_times, station_of_interest)
 
-        # Returns a GeoDataFrame with columns "response_time" and "geometry"
-        # where the geometry column contains the response time polygons
-        station_gdf = compute_subgraphs(esn_graph, response_times, station_of_interest)
-
-        # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
-        for j in range(len(response_times)):
-            row = station_gdf.loc[
-                (station_gdf['response_time'] == response_times[j]), 
-                ['response_time', 'geometry']
-            ]
-            gdf_list[j] = gdf_list[j].append(row)
+            # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
+            for j in range(len(response_times)):
+                row = station_gdf.loc[
+                    (station_gdf['response_time'] == response_times[j]), 
+                    ['response_time', 'geometry']
+                ]
+                gdf_list[j] = gdf_list[j].append(row)
 
     # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
