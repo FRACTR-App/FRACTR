@@ -150,7 +150,9 @@ if __name__ == "__main__":
                     ['response_time', 'geometry']
                 ]
                 gdf_list[j] = gdf_list[j].append(row)
-
+    # Print a list of ESN for which their emergency response polygon was considered invalid
+    # and network analysis for that station was therefore not conducted
+    print(poly_not_valid)
     # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
         response_min = int(response_times[i]/60)
