@@ -12,7 +12,7 @@ from shapely.geometry import Point
 
 ox.config(log_console=False, use_cache=True)
 
-WEB_DIR = "/var/www/html/"
+WEB_DIR = ""
 
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
@@ -49,8 +49,6 @@ def compute_subgraphs(G, response_times, station):
     # Fetch the station's nearest node
     station_tuple = (station.y, station.x)
     station_node = ox.get_nearest_node(G, point=station_tuple, method='euclidean')
-    print(station_node)
-    print(station_tuple)
 
     # Iterate over response times bins for that station
     for i in range(len(response_times)):
