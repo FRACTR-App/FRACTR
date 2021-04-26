@@ -21,10 +21,18 @@ def hydrants_to_geojson(output_file_name, input_file_path):
 def zone_to_geojson(output_file_name, input_file_path):
     zone_path = input_file_path
     gdf = gpd.read_file(zone_path)
-    zone_polygons = gdf[["ESN", "geometry"]]
+    zone_polygons = gdf[["ESN", "FIRE_AgencyId", "geometry"]]
+
+    # If any FireAgency_Id vlue includes the substring "WEYBRIDGE", 
+    # set the entire string to simply "WEYBRIDGE"
+    zone_polygons.loc[zone_polygons["FIRE_AgencyId"].str.contains("WEYBRIDGE"),
+        "FIRE_AgencyId"] = "WEYBRIDGE"
+
+    # Merge polygons with the same FIRE_AgencyId (i.e. of the same FD ESN)
+    clean_zone = zone_polygons.dissolve(by = "FIRE_AgencyId")
 
     print("Outputting %s.geojson..." % output_file_name)
-    zone_polygons.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
+    clean_zone.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
 
     return gdf
 
