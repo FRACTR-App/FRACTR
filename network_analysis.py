@@ -9,6 +9,7 @@ import osmnx as ox
 import networkx as nx
 import geopandas as gpd
 from shapely.geometry import Point
+from tqdm import tqdm
 
 ox.config(log_console=False, use_cache=True)
 
@@ -84,6 +85,7 @@ if __name__ == "__main__":
     
     # Read in the bounding zone to be used for the graph
     bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
+    print("Making graph...")
 
     # Store the Vermont graph in a .graphml file so we don't need to recompute
     # it every time from the geoJson
@@ -108,7 +110,7 @@ if __name__ == "__main__":
         gdf_list.append(gpd.GeoDataFrame())
 
     # iterate over every station
-    for i in range(len(stations)): # and fetch all applicable response times
+    for i in tqdm(range(len(stations))): # and fetch all applicable response times
 
         # Select the station Point object to be passed as a param to compute_subgraphs()
         station_of_interest = stations['geometry'].loc[i]
@@ -128,7 +130,7 @@ if __name__ == "__main__":
     # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
         response_min = int(response_times[i]/60)
-        gdf_list[i].to_file("%s.geojson" % (WEB_DIR + str(response_min)), driver="GeoJSON")
+        gdf_list[i].to_file("%s.geojson" % str(response_min), driver="GeoJSON")
 
 
 ########################################
