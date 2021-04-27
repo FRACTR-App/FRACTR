@@ -46,6 +46,7 @@ if __name__ == "__main__":
         buffer.columns = ['geometry']
         
         hydrant_polys_gdf = hydrant_polys_gdf.append(buffer)
+        print(hydrant_polys_gdf)
     
     # Make the dataframe into a geojson file
     hydrant_polys_gdf.to_file("%s.geojson" % (WEB_DIR + "hydrant_polys"), driver="GeoJSON")
