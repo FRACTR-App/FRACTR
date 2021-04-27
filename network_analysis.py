@@ -101,6 +101,8 @@ if __name__ == "__main__":
         ox.save_graphml(G, "vermont_graph.graphml")
     else:
         G = ox.load_graphml("vermont_graph.graphml")
+
+    print("Vermont graph made!")
     
     # Project the station nodes to the same CRS as that of the Graph
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
