@@ -106,7 +106,7 @@ if __name__ == "__main__":
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
 
     # Response time in seconds
-    response_times = [120, 300]
+    response_times = [120, 300, 600, 1200]
 
     # List of dataframes for each response time
     gdf_list = []
