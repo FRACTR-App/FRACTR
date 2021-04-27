@@ -14,8 +14,6 @@ from tqdm import tqdm
 
 ox.config(log_console=False, use_cache=True)
 
-WEB_DIR = ""
-
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
 

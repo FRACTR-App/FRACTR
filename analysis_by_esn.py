@@ -13,8 +13,6 @@ from tqdm import tqdm
 
 ox.config(log_console=False, use_cache=True)
 
-WEB_DIR = ""
-
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
 
@@ -82,14 +80,12 @@ if __name__ == "__main__":
     
     # Read in station coordinate data
     stations = gpd.read_file("fire_station_coords.geojson")
-    #stations = gpd.read_file("midd_station.geojson")
     
-    # Read in the bounding zone to be used for the graph
+    # Read in the bounding zone to be used for the wide Vermont graph
     bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
 
     # Read in the emergency service zones to be used for subgraphs
     esn_zones = gpd.read_file("zone_polygons.geojson")
-    #esn_zones = gpd.read_file("midd_zone.geojson")
 
     # Store the Vermont graph in a .graphml file so we don't need to recompute
     # it every time from the geoJson
@@ -103,7 +99,7 @@ if __name__ == "__main__":
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
 
     # Response time in seconds
-    response_times = [120, 300]
+    response_times = [120, 300, 600, 1200]
 
     # List of dataframes for each response time
     gdf_list = []
@@ -150,10 +146,11 @@ if __name__ == "__main__":
                     ['response_time', 'geometry']
                 ]
                 gdf_list[j] = gdf_list[j].append(row)
+    
     # Print a list of ESN for which their emergency response polygon was considered invalid
     # and network analysis for that station was therefore not conducted
     print(poly_not_valid)
     # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
         response_min = int(response_times[i]/60)
-        gdf_list[i].to_file("%s_esn.geojson" % (WEB_DIR + str(response_min)), driver="GeoJSON")
+        gdf_list[i].to_file("%s_esn.geojson" % str(response_min), driver="GeoJSON")
