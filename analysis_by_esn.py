@@ -95,6 +95,8 @@ if __name__ == "__main__":
     # Read in the emergency service zones to be used for subgraphs
     esn_zones = gpd.read_file("zone_polygons.geojson")
 
+    print("Making Vermont graph...")
+
     # Store the Vermont graph in a .graphml file so we don't need to recompute
     # it every time from the geoJson
     if not os.path.exists("vermont_graph.graphml"):
@@ -102,6 +104,8 @@ if __name__ == "__main__":
         ox.save_graphml(G, "vermont_graph.graphml")
     else:
         G = ox.load_graphml("vermont_graph.graphml")
+
+    print("Graph made!")
     
     # Project the station nodes to the same CRS as that of the Graph
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
@@ -125,14 +129,10 @@ if __name__ == "__main__":
 
         # Select the station Point object to be passed as a param to compute_subgraphs()
         station_of_interest = stations['geometry'].loc[i]
-        #station_of_interest = stations.loc[i]
-        #print(station_of_interest)
 
-
-        # Create the graph for the station's corresponding emergency service zone using the esn
-        station_esn = stations['ESN'].loc[i]
-        #print(station_esn)
-        zone_coords = esn_zones.loc[esn_zones["ESN"] == station_esn, ["ESN", "geometry"]]
+        # Create the graph for the station's corresponding emergency service zone using the Fire ESN
+        station_esn = stations['FIRE_AgencyId'].loc[i]
+        zone_coords = esn_zones.loc[esn_zones["FIRE_AgencyId"] == station_esn, ["FIRE_AgencyId", "geometry"]]
         print(zone_coords)
         zone_poly = zone_coords["geometry"].iloc[0]
     
