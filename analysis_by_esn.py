@@ -9,6 +9,7 @@ import osmnx as ox
 import networkx as nx
 import geopandas as gpd
 from shapely.geometry import Point, Polygon, shape
+import alphashape
 from tqdm import tqdm
 
 ox.config(log_console=False, use_cache=True)
@@ -58,7 +59,14 @@ def compute_subgraphs(G, response_times, station):
 
         node_points_coords = [Point((data['lon'], data['lat'])) for node, data in subgraph.nodes(data=True)]
 
-        bounding_poly_coords = gpd.GeoSeries(node_points_coords).unary_union.convex_hull
+        # bounding_poly_coords = gpd.GeoSeries(node_points_coords).unary_union.convex_hull
+
+        # Make list of nodes into GeoSeries multi-point
+        multi_point = gpd.GeoSeries(node_points_coords).unary_union
+        # Create a concave hull polygon from the multi-point
+        concave_hull = alphashape.alphashape(multi_point, 30)
+        # Convert back to a GeoSeries then to a GeoDataFrame
+        bounding_poly_coords = gpd.GeoSeries(concave_hull)
         poly_as_gdf = gpd.GeoDataFrame([bounding_poly_coords])
         
         # Rename the geometry column appropriately
