@@ -41,6 +41,10 @@ if __name__ == "__main__":
         hydrant_of_interest = hydrants['geometry'].loc[i]
         # The buffer is initialized as 183 meters (600ft)
         buffer = make_buffer(hydrant_of_interest, 183)
+
+        # Rename the geometry column
+        buffer.columns = ['geometry']
+        
         hydrant_polys_gdf = hydrant_polys_gdf.append(buffer)
         print(hydrant_polys_gdf)
     

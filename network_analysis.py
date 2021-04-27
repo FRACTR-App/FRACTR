@@ -51,8 +51,6 @@ def compute_subgraphs(G, response_times, station):
     # Fetch the station's nearest node
     station_tuple = (station.y, station.x)
     station_node = ox.get_nearest_node(G, point=station_tuple, method='euclidean')
-    print(station_node)
-    print(station_tuple)
 
     # Iterate over response times bins for that station
     for i in range(len(response_times)):
