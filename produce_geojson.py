@@ -23,16 +23,18 @@ def zone_to_geojson(output_file_name, input_file_path):
     gdf = gpd.read_file(zone_path)
     zone_polygons = gdf[["ESN", "FIRE_AgencyId", "geometry"]]
 
-    # If any FireAgency_Id vlue includes the substring "WEYBRIDGE", 
-    # set the entire string to simply "WEYBRIDGE"
+    # If any FireAgency_Id value includes the substring "WEYBRIDGE", 
+    # set the entire string to be simply "WEYBRIDGE".
+    # This is to easily dissolve all different Weybridge ESNs into
+    # one FIRE_AgencyId zone.
     zone_polygons.loc[zone_polygons["FIRE_AgencyId"].str.contains("WEYBRIDGE"),
         "FIRE_AgencyId"] = "WEYBRIDGE"
 
     # Merge polygons with the same FIRE_AgencyId (i.e. of the same FD ESN)
-    clean_zone = zone_polygons.dissolve(by = "FIRE_AgencyId")
+    # clean_zone = zone_polygons.dissolve(by = "FIRE_AgencyId")
 
     print("Outputting %s.geojson..." % output_file_name)
-    clean_zone.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
+    zone_polygons.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
 
     return gdf
 
@@ -45,7 +47,7 @@ def stations_to_geojson(output_file_name, input_file_path):
     gdf = gpd.read_file(structure_data)
     
     station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION"),
-        ["TOWNNAME", "ESN", "geometry"]]
+        ["TOWNNAME", "FIRE_AgencyId", "ESN", "geometry"]]
 
     # Testing purposes
     # station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION") & (gdf["ESN"] == 283),
@@ -76,12 +78,12 @@ def vermont_to_geojson(output_file_name, input_file_path):
 if __name__ == "__main__":
 
     # Generate JSON files collected from the GeoPortal API to be ingested by GeoPandas
-    request_API_data()
+    # request_API_data()
 
     # Create new GEOJSON files by filtering through JSON data for relevant columns,
     # output geojson files
-    #stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
-    vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
-    # zone_to_geojson("zone_polygons", API_ZONES_PATH)
+    # stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
+    # vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
+    zone_to_geojson("zone_polygons", API_ZONES_PATH)
     
     
