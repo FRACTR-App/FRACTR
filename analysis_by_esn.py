@@ -11,6 +11,7 @@ import geopandas as gpd
 from shapely.geometry import Point, Polygon, shape
 import alphashape
 from tqdm import tqdm
+import pandas
 
 ox.config(log_console=False, use_cache=True)
 
@@ -93,9 +94,9 @@ if __name__ == "__main__":
     bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
 
     # Read in the emergency service zones to be used for subgraphs
-    esn_zones = gpd.read_file("zone_polygons.geojson")
+    zone_polygons = gpd.read_file("zone_polygons.geojson")
 
-    print("Making Vermont graph...")
+    # print("Making Vermont graph...")
 
     # Store the Vermont graph in a .graphml file so we don't need to recompute
     # it every time from the geoJson
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     else:
         G = ox.load_graphml("vermont_graph.graphml")
 
-    print("Graph made!")
+    # print("Graph made!")
     
     # Project the station nodes to the same CRS as that of the Graph
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
@@ -119,26 +120,51 @@ if __name__ == "__main__":
     #List of station ESNs where the station's EMZ is not valid
     poly_not_valid = []
 
+
+    # We need to use the FIRE_AgencyId zones as the bounding zones for station response times.
+    # The zone_polygons.geojson polygons are currently for every ESN.
+    # To achieve this:
+    # 1. We create a "FIRE_AgencyId" column in the stations dataset
+    # 2. We retrieve this value for every station based on the unique ESNs in the zones dataset
+    #    and the ESN that we have for the station
+    # 3. We dissolve the ESN polygons into the wider Fire agency ID zones
+    # 4. And we finally use these Fire Agency ID polygons as bounding zones for the stations,
+    #    in computing our travel times.
+
+    # Step 1: create a "FIRE_AgencyId" column in the stations dataset
+    stations["FIRE_AgencyId"] = pandas.Series()
+
+    # Step 2: For every station (and its ESN), fetch the ESN's FIRE_AgencyId from zones
+    for i in range(len(stations)):
+        station_esn = stations["ESN"].loc[i]
+        new_station_agency_df = zone_polygons.loc[station_esn == zone_polygons["ESN"], ["FIRE_AgencyId"]].values[0]
+        stations["FIRE_AgencyId"].loc[i] = new_station_agency_df[0]
+
+    # Write this information back to file as it may be used later
+    stations.to_file("fire_station_coords.geojson", driver = "GeoJSON")
+
+    # Step 3: dissolve the ESN polygons into the wider FIRE_AgencyId zones
+    fire_zones = zone_polygons.dissolve(by = "FIRE_AgencyId")
+
     # Initialize as many GeoDataFrames as there are response time bins
     # Store these new GeoDataFrames in the gdf_list array.
     for i in range(len(response_times)):
         gdf_list.append(gpd.GeoDataFrame())
 
-    # iterate over every station
-    for i in tqdm(range(len(stations))): # and fetch all applicable response times
+    # Iterate over every station
+    for i in tqdm(range(len(stations))):
 
         # Select the station Point object to be passed as a param to compute_subgraphs()
         station_of_interest = stations['geometry'].loc[i]
 
-        # Create the graph for the station's corresponding emergency service zone using the Fire ESN
-        station_esn = stations['FIRE_AgencyId'].loc[i]
-        zone_coords = esn_zones.loc[esn_zones["FIRE_AgencyId"] == station_esn, ["FIRE_AgencyId", "geometry"]]
-        print(zone_coords)
+        # Create the graph for the station's corresponding Fire Dept. zone using the FIRE_AgencyId
+        station_fd_zone = stations['FIRE_AgencyId'].loc[i]
+        zone_coords = zone_polygons.loc[zone_polygons["FIRE_AgencyId"] == station_fd_zone, ["FIRE_AgencyId", "ESN", "geometry"]]
         zone_poly = zone_coords["geometry"].iloc[0]
     
         # Create the graph for the emergency service zone if the polygon is valid
         if not(zone_poly.is_valid):
-            poly_not_valid.append(station_esn)
+            poly_not_valid.append(station_fd_zone)
             continue
         else:
             esn_graph = make_graph(zone_poly)
