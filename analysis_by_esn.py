@@ -96,7 +96,7 @@ if __name__ == "__main__":
     # Read in the emergency service zones to be used for subgraphs
     zone_polygons = gpd.read_file("zone_polygons.geojson")
 
-    # print("Making Vermont graph...")
+    print("Making Vermont graph...")
 
     # Store the Vermont graph in a .graphml file so we don't need to recompute
     # it every time from the geoJson
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     else:
         G = ox.load_graphml("vermont_graph.graphml")
 
-    # print("Graph made!")
+    print("Graph made!")
     
     # Project the station nodes to the same CRS as that of the Graph
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
