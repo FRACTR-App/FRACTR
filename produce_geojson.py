@@ -47,13 +47,7 @@ def stations_to_geojson(output_file_name, input_file_path):
     gdf = gpd.read_file(structure_data)
     
     station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION"),
-        ["TOWNNAME", "FIRE_AgencyId", "ESN", "geometry"]]
-
-    # Testing purposes
-    # station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION") & (gdf["ESN"] == 283),
-        # ["ESN", "geometry"]]
-    # station_coords = gdf.loc[gdf["ESN"] == 283,
-        # ["ESN", "geometry"]]
+        ["TOWNNAME", "ESN", "geometry"]]
 
     print("Outputting %s.geojson..." % output_file_name)
     station_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
@@ -82,8 +76,8 @@ if __name__ == "__main__":
 
     # Create new GEOJSON files by filtering through JSON data for relevant columns,
     # output geojson files
-    # stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
+    stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
     # vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
-    zone_to_geojson("zone_polygons", API_ZONES_PATH)
+    # zone_to_geojson("zone_polygons", API_ZONES_PATH)
     
     
