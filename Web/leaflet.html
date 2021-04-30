@@ -29,10 +29,54 @@
             zoomOffset: -1,
             accessToken: 'pk.eyJ1IjoiamNhbWJlZm9ydCIsImEiOiJja2x6Ym4xaGQwOWUxMnVyM3J2aW54bXhuIn0.vIUQw48WSxIujl74dYNqkA'
         });
+
+        color_list = ['#4d004b', '#88419d', '#88419d', '88419d']
+        // Path needs the trailing slash
+        base_dir = ""
         
-        function polystyle(feature) {
+        function poly_style1(feature) {
             return {
-                fillColor: 'red',
+                fillColor: color_list[0],
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: .4
+            }
+        }
+
+        function poly_style2(feature) {
+            return {
+                fillColor: color_list[1],
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: .4
+            }
+        }
+
+        function poly_style3(feature) {
+            return {
+                fillColor: color_list[2],
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: .4
+            }
+        }
+
+        function poly_style4(feature) {
+            return {
+                fillColor: color_list[3],
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: .4
+            }
+        }
+
+        function marker_style(feature) {
+            return {
+                fillColor: 'blue',
                 weight: 2,
                 opacity: 1,
                 color: 'white',
@@ -40,38 +84,15 @@
             }
         }
 
-        function polystyle2(feature) {
+        function zones_style(feature) {
             return {
-                fillColor: 'blue',
+                fillColor: 'gray',
                 weight: 2,
                 opacity: 1,
                 color: 'white',
-                fillOpacity: .5
+                fillOpacity: .2
             }
         }
-
-        function polystyle3(feature) {
-            return {
-                fillColor: 'green',
-                weight: 2,
-                opacity: 1,
-                color: 'white',
-                fillOpacity: .5
-            }
-        }
-
-        function polystyle4(feature) {
-            return {
-                fillColor: 'purple',
-                weight: 2,
-                opacity: 1,
-                color: 'white',
-                fillOpacity: .5
-            }
-        }
-
-        // Path needs the trailing slash
-        base_dir = "/var/www/html/"
 
         let poly2_path = base_dir.concat("2.geojson");
         let poly5_path = base_dir.concat("5.geojson");
@@ -80,41 +101,41 @@
         let stations_path = base_dir.concat("fire_station_coords.geojson");
         let zones_path = base_dir.concat("zone_polygons.geojson");
 
-        var poly2 = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
-        var poly5 = L.geoJSON(null, {style:polystyle2} ).addTo(mymap);
-        var poly10 = L.geoJSON(null, {style:polystyle3} ).addTo(mymap);
-        var poly20 = L.geoJSON(null, {style:polystyle4} ).addTo(mymap);
-        var stations = L.geoJSON(null, {style:polystyle} ).addTo(mymap);
-        var zones = L.geoJSON(null, {style:polystyle3} );
+        var poly2 = L.geoJSON(null, {style:poly_style1} ).addTo(mymap);
+        var poly5 = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
+        var poly10 = L.geoJSON(null, {style:poly_style3} ).addTo(mymap);
+        var poly20 = L.geoJSON(null, {style:poly_style4} ).addTo(mymap);
+        var stations = L.geoJSON(null, {style:marker_style} ).addTo(mymap);
+        var zones = L.geoJSON(null, {style:zones_style} );
 
         // Use JQuery to import the geoJSON file
         $.getJSON(poly2_path, function(data) {
-            poly2.setStyle(polystyle);
+            poly2.setStyle(poly_style1);
             poly2.addData(data);
         });
 
         $.getJSON(poly5_path, function(data) {
-            poly5.setStyle(polystyle2);
+            poly5.setStyle(poly_style2);
             poly5.addData(data);
         });
 
         $.getJSON(poly10_path, function(data) {
-            poly10.setStyle(polystyle2);
+            poly10.setStyle(poly_style3);
             poly10.addData(data);
         });
 
         $.getJSON(poly20_path, function(data) {
-            poly20.setStyle(polystyle4);
+            poly20.setStyle(poly_style4);
             poly20.addData(data);
         });
 
         $.getJSON(stations_path, function(data) {
-            stations.setStyle(polystyle);
+            stations.setStyle(marker_style);
             stations.addData(data);
         });
 
         $.getJSON(zones_path, function(data) {
-            zones.setStyle(polystyle3);
+            zones.setStyle(zones_style);
             zones.addData(data);
         });
         
@@ -123,11 +144,16 @@
         });
 
         baseMap.addTo(mymap);
-        poly2.addTo(mymap);
-        poly5.addTo(mymap);
-        poly10.addTo(mymap);
         poly20.addTo(mymap);
+        poly10.addTo(mymap);
+        poly5.addTo(mymap);
+        poly2.addTo(mymap);
         stations.addTo(mymap);
+
+        poly20.bringToFront();
+        poly10.bringToFront();
+        poly5.bringToFront();
+        poly2.bringToFront();
 
         var overlays = {
             "2 minutes": poly2,
