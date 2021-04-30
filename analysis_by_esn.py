@@ -13,7 +13,9 @@ import alphashape
 from tqdm import tqdm
 import pandas
 
-ox.config(log_console=False, use_cache=True)
+ox.config(log_console=False,
+            use_cache=True,
+            bidirectional_network_types=['drive_service'])
 
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
@@ -132,19 +134,20 @@ if __name__ == "__main__":
     #    in computing our travel times.
 
     # Step 1: create a "FIRE_AgencyId" column in the stations dataset
-    stations["FIRE_AgencyId"] = pandas.Series()
+    stations["FIRE_AgencyId"] = ""
 
     # Step 2: For every station (and its ESN), fetch the ESN's FIRE_AgencyId from zones
     for i in range(len(stations)):
         station_esn = stations["ESN"].loc[i]
-        new_station_agency_df = zone_polygons.loc[station_esn == zone_polygons["ESN"], ["FIRE_AgencyId"]].values[0]
-        stations["FIRE_AgencyId"].loc[i] = new_station_agency_df[0]
+        station_agency_id = zone_polygons.loc[station_esn == zone_polygons["ESN"], ["FIRE_AgencyId"]].values[0][0]
+        stations.loc[stations.index[i], "FIRE_AgencyId"] = station_agency_id
 
     # Write this information back to file as it may be used later
-    stations.to_file("fire_station_coords.geojson", driver = "GeoJSON")
+    # stations.to_file("fire_station_coords.geojson", driver = "GeoJSON")
+    print(stations)
 
     # Step 3: dissolve the ESN polygons into the wider FIRE_AgencyId zones
-    fire_zones = zone_polygons.dissolve(by = "FIRE_AgencyId")
+    zone_polygons = zone_polygons.dissolve(by = "FIRE_AgencyId").reset_index()
 
     # Initialize as many GeoDataFrames as there are response time bins
     # Store these new GeoDataFrames in the gdf_list array.
@@ -156,10 +159,13 @@ if __name__ == "__main__":
 
         # Select the station Point object to be passed as a param to compute_subgraphs()
         station_of_interest = stations['geometry'].loc[i]
+        print(station_of_interest)
 
+        # Step 4: use the FIRE_AgencyId polygons as bounding zones.
         # Create the graph for the station's corresponding Fire Dept. zone using the FIRE_AgencyId
         station_fd_zone = stations['FIRE_AgencyId'].loc[i]
         zone_coords = zone_polygons.loc[zone_polygons["FIRE_AgencyId"] == station_fd_zone, ["FIRE_AgencyId", "ESN", "geometry"]]
+        print(zone_coords)
         zone_poly = zone_coords["geometry"].iloc[0]
     
         # Create the graph for the emergency service zone if the polygon is valid
