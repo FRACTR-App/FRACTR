@@ -79,5 +79,5 @@ if __name__ == "__main__":
     #stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
     # vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
     # zone_to_geojson("zone_polygons", API_ZONES_PATH)
-    hydrants_to_geojson("hydrant_coords.geojson", API_HYDRANTS_PATH)
+    hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
     
