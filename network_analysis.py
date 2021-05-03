@@ -12,7 +12,9 @@ from shapely.geometry import Point, MultiPoint
 import alphashape
 from tqdm import tqdm
 
-ox.config(log_console=False, use_cache=True)
+ox.config(log_console=False,
+            use_cache=True,
+            bidirectional_network_types=['drive_service'])
 
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
