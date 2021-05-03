@@ -1,280 +1,215 @@
 """
-This is a dump file that is used for brainstorming
-
-BUILDING OFF CODE FROM network_analysis.py TO INCLUDE MULTIPLE STATIONS
-Creating the response time networks
+Creating the response time networks based on Emergency Service Zones
 Based on code from https://towardsdatascience.com/how-to-calculate-travel-time-for-any-location-in-the-world-56ce639511f
 and https://github.com/gboeing/osmnx-examples/blob/7cb65dbd64b5923a6013a94b72585f27d7a0acfa/notebooks/13-isolines-isochrones.ipynb
 """
 
-from produce_geojson import stations_to_geojson
+import os
 import osmnx as ox
 import networkx as nx
 import geopandas as gpd
-from shapely.geometry import Polygon, Point, LineString
-import matplotlib.pyplot as plt
-from descartes import PolygonPatch
-from tqdm import tqdm
+from shapely.geometry import Point, Polygon, shape
 import alphashape
-# from IPython.display import IFrame
+from tqdm import tqdm
+import pandas
+from descartes import PolygonPatch
+import matplotlib.pyplot as plt
 
-ox.config(log_console=False, use_cache=True)
+ox.config(log_console=False,
+            use_cache=True,
+            bidirectional_network_types=['drive_service'])
 
-# Fetch "zone_polygons.geojson"
-zones = gpd.read_file("midd_zone.geojson") # Middlebury's zone polygon
-stations = gpd.read_file("midd_station.geojson") # Both Middlebury Fire Station
-#zone_geom = zones['geometry'].loc[0] # Get first element
-station = stations['geometry'].loc[0]
-print(station)
-esn = stations['ESN'].loc[0]
-print(type(esn))
-print(esn)
-#zone = zones.loc[zones['ESN'] == esn, ['geometry']]
-#print(zone)
-#zone_coords = zones['geometry'].loc[0]
-#print(zone_geom)
-zone_coords = zones.loc[zones["ESN"] == esn,
-         ["geometry"]]
-zone_final = zone_coords['geometry'].loc[0]
-#print(zone_final)
-# zone_final = ox.projection.project_gdf(zone_final, to_crs=G.graph['crs'], to_latlong=False)
-# print(zone_final)
-# print(zone_coords)
-# Project the station nodes to the same CRS as that of the Graph
-    #stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
+# Returns a Graph of edges & nodes within the bounding_zone polygon geometry
+def make_graph(bounding_zone):
 
-#print(zone_poly)
-        #polygon_gs = gpd.GeoSeries(zone_poly, crs='epsg:4326')
-        # Project the station nodes to the same CRS as that of the Graph
-        #zone_proj = ox.projection.project_gdf(polygon_gs, to_crs=G.graph['crs'], to_latlong=False)
-        #print(zone_proj)
-        # Convert geoseries to geodataframe
-        #zone_gdf = gpd.GeoDataFrame(polygon_gs)
-        #zone_final = zone_gdf["geometry"].loc[0]
-        #print(zone_final)
-# 1 - Create a graph
-G = ox.graph_from_polygon(zone_final, network_type='drive_service')
-# G = ox.graph_from_point(station_tuple, dist=10000, dist_type='network', network_type='all')
-# 2 - Create nodes geodataframe from Graph network (G)
-gdf_nodes = ox.graph_to_gdfs(G, edges=False)
-
-
-station_tuple = (station.y, station.x)
-station = ox.get_nearest_node(G, point=station_tuple)
-
-# Pass in a few default speed values (km/hour)
-# to fill in edges with missing `maxspeed` from OSM
-hwy_speeds = {"residential": 40, 
-              "unclassified": 40,
-              "tertiary": 56, 
-              "secondary": 56, 
-              "primary": 80, 
-              "trunk": 56
-            }
-# # 25 mph, 35 mph, 50 mph
+    # Create a graph based on a drive_service (all roads including service roads) road network
+    G = ox.graph_from_polygon(bounding_zone, network_type='drive_service')
    
-G = ox.add_edge_speeds(G, hwy_speeds)
-G = ox.add_edge_travel_times(G)
+    # Project the graph from lat-long to the UTM zone appropriate for its geographic location.
+    G = ox.project_graph(G)
+    
 
-# For every edge, add a 'time' attribute in minutes.
-# This is based on 'length' (originally in meters, converted here to km)
-# and 'speed_kph' (added to the edge dict by add_edge_speeds(),
-# and converted here to km/m).
-# for _, _, _, data in G.edges(data=True, keys=True):
-#     data["time"] = (data["length"] / 1000) / (data["speed_kph"] / 60) #km/m
-#     print(data)
+    # Pass in default speed values (km/hour) to fill in edges from Open Street Maps
+    # with missing `maxspeed` values
+    hwy_speeds = {"residential": 40, 
+                "unclassified": 40,
+                "tertiary": 56, 
+                "secondary": 56, 
+                "primary": 80, 
+                "trunk": 56
+                }
+    # # 25 mph, 35 mph, 50 mph
 
-# 4 - Project a graph from lat-long to the UTM zone appropriate for its geographic location.
-G = ox.project_graph(G)
+    G = ox.add_edge_speeds(G, hwy_speeds)
+    G = ox.add_edge_travel_times(G)
 
-# Response time in seconds
-response_times = [120, 300]
-
-# 1 - get one color for each isochrone
-iso_colors = ox.plot.get_colors(n=len(response_times), cmap='Reds', start=0.3, return_hex=True)
-# 2 - color the nodes according to isochrone then plot the street network
-node_colors = {}
-
-# Iterate over response times and possible colors
-# Create subgraphs with nodes within radius (using time attributes of edges rather than a spatial distance)
-# Associate nodes in the same subgraph to the same color
-for trip_time, color in zip(sorted(response_times, reverse=True), iso_colors):
-    subgraph = nx.ego_graph(G, station, radius=trip_time, distance='travel_time')
-    for node in subgraph.nodes():
-        node_colors[node] = color
-
-# Get list of possible node colors
-nc = [node_colors[node] if node in node_colors else 'none' for node in G.nodes()]
-# Get list of possible node sizes (i.e. whether or not we should display them)
-ns = [20 if node in node_colors else 0 for node in G.nodes()]
-
-fig, ax = ox.plot_graph(G, node_color=nc, node_size=ns, node_alpha=0.8, edge_linewidth=0.2,
-    edge_color="#999999")
+    return G
 
 
-# make the isochrone polygons
-i = 0
-isochrone_polys = []
-for response_time in sorted(response_times, reverse=True):
-    subgraph = nx.ego_graph(G, station, radius=response_time, distance='travel_time')
-    node_points = [Point((data['lon'], data['lat'])) for node, data in subgraph.nodes(data=True)]
-    #node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
-    #bounding_poly = gpd.GeoSeries(node_points).unary_union.convex_hull
-    poly_as_gdf = gpd.GeoSeries(node_points)
-    concave_hull = alphashape.alphashape(poly_as_gdf, alpha = 0.2)
-    isochrone_polys.append(concave_hull)
+# Returns a GeoDataFrame containing polygon geometries and a response time column
+def compute_subgraphs(G, response_times, station):
+    
+    # initialize the geodataframe
+    station_polygons = gpd.GeoDataFrame()
+    
+    # Fetch the station's nearest node
+    station_tuple = (station.y, station.x)
+    station_node = ox.get_nearest_node(G, point=station_tuple, method='euclidean')
+    #print(station_node)
+    # Iterate over response times bins for that station
+    for i in range(len(response_times)):
+        response_time = response_times[i]
 
-# plot the network then add isochrones as colored descartes polygon patches
-fig, ax = ox.plot_graph(G, show=False, close=False, edge_color='k', edge_alpha=0.2, node_color='none')
-for polygon, fc in zip(isochrone_polys, iso_colors):
-    patch = PolygonPatch(polygon, fc=fc, ec='none', alpha=0.6, zorder=-1)
-    ax.add_patch(patch)
-plt.show()
+        # Create the subgraph for the station and the response time
+        subgraph = nx.ego_graph(G, station_node, radius=response_time, distance='travel_time')
+        #fig, ax = ox.plot.plot_graph(subgraph)
+        node_points_coords = [Point((data['lon'], data['lat'])) for node, data in subgraph.nodes(data=True)]
+        #print("nodes")
+        #print(node_points_coords)
+        # bounding_poly_coords = gpd.GeoSeries(node_points_coords).unary_union.convex_hull
 
+        # Make list of nodes into GeoSeries multi-point
+        multi_point = gpd.GeoSeries(node_points_coords).unary_union
+        #print(multi_point)
+        # Create a concave hull polygon from the multi-point
+        concave_hull = alphashape.alphashape(multi_point, 30)
+        #print(concave_hull)
+        # Convert back to a GeoSeries then to a GeoDataFrame
+        bounding_poly_coords = gpd.GeoSeries(concave_hull)
+        poly_as_gdf = gpd.GeoDataFrame([bounding_poly_coords])
+        
+        # Rename the geometry column appropriately
+        poly_as_gdf.columns = ['geometry']
+        
+        # Add the response time column
+        poly_as_gdf['response_time'] = response_time
+        
+        # Append the polygon for that station to our GeoDataFrame
+        station_polygons = station_polygons.append(poly_as_gdf)
 
+    # Return the GeoDataFrame containing polygon bins for the station
+    return station_polygons
 
-
-
-# def make_iso_polys(G, edge_buff=25, node_buff=50, infill=False):
-#     isochrone_polys = []
-#     for response_time in sorted(response_times, reverse=True):
-#         subgraph = nx.ego_graph(G, station, radius=response_time, distance='time')
-#         node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
-#         nodes_gdf = gpd.GeoDataFrame({"id": list(subgraph.nodes)}, geometry=node_points)
-#         nodes_gdf = nodes_gdf.set_index("id")
-
-#         edge_lines = []
-#         for n_fr, n_to in subgraph.edges():
-#             f = nodes_gdf.loc[n_fr].geometry
-#             t = nodes_gdf.loc[n_to].geometry
-#             edge_lookup = G.get_edge_data(n_fr, n_to)[0].get("geometry", LineString([f, t]))
-#             edge_lines.append(edge_lookup)
-
-#         n = nodes_gdf.buffer(node_buff).geometry
-#         e = gpd.GeoSeries(edge_lines).buffer(edge_buff).geometry
-#         all_gs = list(n) + list(e)
-#         new_iso = gpd.GeoSeries(all_gs).unary_union
-
-#         # try to fill in surrounded areas so shapes will appear solid and
-#         # blocks without white space inside them
-#         if infill:
-#             new_iso = Polygon(new_iso.exterior)
-#         isochrone_polys.append(new_iso)
-#     return isochrone_polys
-
-
-# isochrone_polys = make_iso_polys(G, edge_buff=25, node_buff=0, infill=True)
-# fig, ax = ox.plot_graph(
-#     G, show=False, close=False, edge_color="#999999", edge_alpha=0.2, node_size=0
-# )
-# for polygon, fc in zip(isochrone_polys, iso_colors):
-#     patch = PolygonPatch(polygon, fc=fc, ec="none", alpha=0.7, zorder=-1)
-#     ax.add_patch(patch)
-# plt.show()
-
-
-
-
-# def color_graph(G, response_times, station_tuple):
-
-#     # 1 - get one color for each isochrone
-#     iso_colors = ox.plot.get_colors(n=len(response_times), cmap='Reds', start=0.3, return_hex=True)
-#     # 2 - color the nodes according to isochrone then plot the street network
-#     node_colors = {}
-
-#     # Iterate over response times and possible colors
-#     # Create subgraphs with nodes within radius (using time attributes of edges rather than a spatial distance)
-#     # Associate nodes in the same subgraph to the same color
-#     for trip_time, color in zip(sorted(response_times, reverse=True), iso_colors):
-#         subgraph = nx.ego_graph(G, station_of_interest, radius=trip_time, distance='travel_time')
-#         for node in subgraph.nodes():
-#             node_colors[node] = color
-
-#     # Get list of possible node colors
-#     nc = [node_colors[node] if node in node_colors else 'none' for node in G.nodes()]
-#     # Get list of possible node sizes (i.e. whether or not we should display them)
-#     ns = [20 if node in node_colors else 0 for node in G.nodes()]
-
-    # fig, ax = ox.plot_graph(G, node_color=nc, node_size=ns, node_alpha=0.8, edge_linewidth=0.2,
-        # edge_color="#999999")
-
-# plot the network then add isochrones as colored descartes polygon patches
-# fig, ax = ox.plot_graph(G, show=False, close=False, edge_color='k', edge_alpha=0.2, node_color='none')
-# for polygon, fc in zip(isochrone_polys, iso_colors):
-#     patch = PolygonPatch(polygon, fc=fc, ec='none', alpha=0.6, zorder=-1)
-#     ax.add_patch(patch)
-# plt.show()
-
-# def make_iso_polys(G, edge_buff=25, node_buff=50, infill=False):
-#     isochrone_polys = []
-#     for response_time in sorted(response_times, reverse=True):
-#         subgraph = nx.ego_graph(G, station_of_interest, radius=response_time, distance='travel_time')
-#         node_points = [Point((data['x'], data['y'])) for node, data in subgraph.nodes(data=True)]
-#         nodes_gdf = gpd.GeoDataFrame({"id": list(subgraph.nodes)}, geometry=node_points)
-#         nodes_gdf = nodes_gdf.set_index("id")
-
-#         edge_lines = []
-#         for n_fr, n_to in subgraph.edges():
-#             f = nodes_gdf.loc[n_fr].geometry
-#             t = nodes_gdf.loc[n_to].geometry
-#             edge_lookup = G.get_edge_data(n_fr, n_to)[0].get("geometry", LineString([f, t]))
-#             edge_lines.append(edge_lookup)
-
-#         n = nodes_gdf.buffer(node_buff).geometry
-#         e = gpd.GeoSeries(edge_lines).buffer(edge_buff).geometry
-#         all_gs = list(n) + list(e)
-#         new_iso = gpd.GeoSeries(all_gs).unary_union
-
-#         # try to fill in surrounded areas so shapes will appear solid and
-#         # blocks without white space inside them
-#         if infill:
-#             new_iso = Polygon(new_iso.exterior)
-#         isochrone_polys.append(new_iso)
-#     return isochrone_polys
-
-
-# isochrone_polys = make_iso_polys(G, edge_buff=25, node_buff=0, infill=True)
-# fig, ax = ox.plot_graph(
-#     G, show=False, close=False, edge_color="#999999", edge_alpha=0.2, node_size=0
-# )
-# for polygon, fc in zip(isochrone_polys, iso_colors):
-#     patch = PolygonPatch(polygon, fc=fc, ec="none", alpha=0.7, zorder=-1)
-#     ax.add_patch(patch)
-# plt.show()
 
 ########################################
-########################################
 
-"""
-Questions for Joe:
-- Nodes are currently road intersections, not buildings
-- Convex vs concave hulls vs buffers
-- How to handle overlap?
-- Best way to 'export' the polygons together (into a layer?)?
-  Export as one vector layer of multiple polygons? Raster heat map? (rasters are pixel-based,
-  vectors are point-based / have nodes, edges and polygons) What would be easier for Leaflet to
-  show / compute browser-side? Leaflet can take in geojson files, and other data formats?
-- ESNs / overlap of stations: e.g. it takes North Midd 5 mins and East Midd 10 mins to reach a node.
-  Which bin should the node be placed?
-  - If we want to have the shortest response time on top: how can we prevent Leaflet
-    from adding up the fillColors of the different features?
-- When a user zooms in or out, should they see different layers? E.g. if zoomed out,
-  see only a binary of reachable and non-reachable zones in one bin (maybe 20 minutes).
-  If zoomed in, see all of the bins for a given area.
-- Polygons vs buffer zones for display
-- 3 Different geojson files, where every file contains polygon features of the same bin
-- Follow-up: how can one create toggleable layers? Is this possible from geojson files?
-  Do all features (here: polygons) from the same geojson file considered to be in the
-  same LayerGroup?
+if __name__ == "__main__":
+    
+    # Read in station coordinate data
+    stations = gpd.read_file("problem_station_coords.geojson")
 
-Try to use a concave hull (geopandas)
-Tesselation of hexagons
-One base VT network: subgraphs that change an edge attributes for the bins,
-to handle overlap
-Tile vectorization if we want to map roads / many vector features
- (not needed if polygons / areas are used as they're less computationally expensive
- for a browser)
-Visualizing edges / roads rather than polygons, maybe
+    # Read in the bounding zone to be used for the wide Vermont graph
+    bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
+
+    # Read in the emergency service zones to be used for subgraphs
+    zone_polygons = gpd.read_file("zone_polygons.geojson")
+
+    print("Making Vermont graph...")
+
+    # Store the Vermont graph in a .graphml file so we don't need to recompute
+    # it every time from the geoJson
+    if not os.path.exists("vermont_graph.graphml"):
+        G = make_graph(bounding_zone)
+        ox.save_graphml(G, "vermont_graph.graphml")
+    else:
+        G = ox.load_graphml("vermont_graph.graphml")
+
+    print("Graph made!")
+    
+    # Project the station nodes to the same CRS as that of the Graph
+    stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
+
+    # Response time in seconds
+    response_times = [120, 300, 600, 1200]
+
+    # List of dataframes for each response time
+    gdf_list = []
+
+    #List of station ESNs where the station's EMZ is not valid
+    poly_not_valid = []
 
 
-"""
+    # We need to use the FIRE_AgencyId zones as the bounding zones for station response times.
+    # The zone_polygons.geojson polygons are currently for every ESN.
+    # To achieve this:
+    # 1. We create a "FIRE_AgencyId" column in the stations dataset
+    # 2. We retrieve this value for every station based on the unique ESNs in the zones dataset
+    #    and the ESN that we have for the station
+    # 3. We dissolve the ESN polygons into the wider Fire agency ID zones
+    # 4. And we finally use these Fire Agency ID polygons as bounding zones for the stations,
+    #    in computing our travel times.
+
+    # Step 1: create a "FIRE_AgencyId" column in the stations dataset
+    stations["FIRE_AgencyId"] = ""
+
+    # Step 2: For every station (and its ESN), fetch the ESN's FIRE_AgencyId from zones
+    for i in range(len(stations)):
+        station_esn = stations["ESN"].loc[i]
+        #print(station_esn)
+        station_agency_id = zone_polygons.loc[station_esn == zone_polygons["ESN"], ["FIRE_AgencyId"]].values[0][0]
+        #print(station_agency_id)
+        stations.loc[stations.index[i], "FIRE_AgencyId"] = station_agency_id
+        #print(stations)
+    # Write this information back to file as it may be used later
+    # stations.to_file("fire_station_coords.geojson", driver = "GeoJSON")
+    #print(stations)
+
+    # Step 3: dissolve the ESN polygons into the wider FIRE_AgencyId zones
+    zone_polygons = zone_polygons.dissolve(by = "FIRE_AgencyId").reset_index()
+    zone_polygons.to_file("dissolved_zones.geojson", driver = "GeoJSON")
+    print("zone geojson created")
+
+    # Initialize as many GeoDataFrames as there are response time bins
+    # Store these new GeoDataFrames in the gdf_list array.
+    for i in range(len(response_times)):
+        gdf_list.append(gpd.GeoDataFrame())
+
+    # Iterate over every station
+    for i in tqdm(range(len(stations))):
+
+        # Select the station Point object to be passed as a param to compute_subgraphs()
+        station_of_interest = stations['geometry'].loc[i]
+        print(station_of_interest)
+        print(stations['ESN'].loc[i])
+
+        # Step 4: use the FIRE_AgencyId polygons as bounding zones.
+        # Create the graph for the station's corresponding Fire Dept. zone using the FIRE_AgencyId
+        station_fd_zone = stations['FIRE_AgencyId'].loc[i]
+        print(station_fd_zone)
+        zone_coords = zone_polygons.loc[zone_polygons["FIRE_AgencyId"] == station_fd_zone, ["FIRE_AgencyId", "ESN", "geometry"]]
+        #print(zone_coords)
+        zone_poly = zone_coords["geometry"].iloc[0]
+        #print(zone_poly)
+    
+        # Create the graph for the emergency service zone if the polygon is valid
+        if not(zone_poly.is_valid):
+            poly_not_valid.append(station_fd_zone)
+            continue
+        else:
+            esn_graph = make_graph(zone_poly)
+            #fig, ax = ox.plot_graph(esn_graph)
+            station = stations['geometry'].loc[i]
+            station_tuple = (station.y, station.x)
+            station_node = ox.get_nearest_node(G, point=station_tuple, method='euclidean')
+            nc = ['r' if node==station_node else '#336699' for node in esn_graph.nodes()]
+            fig, ax = ox.plot_graph(esn_graph, node_color=nc, node_zorder=2)
+
+            # Returns a GeoDataFrame with columns "response_time" and "geometry"
+            # where the geometry column contains the response time polygons
+            station_gdf = compute_subgraphs(esn_graph, response_times, station_of_interest)
+
+            # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
+            for j in range(len(response_times)):
+                row = station_gdf.loc[
+                    (station_gdf['response_time'] == response_times[j]), 
+                    ['response_time', 'geometry']
+                ]
+                gdf_list[j] = gdf_list[j].append(row)
+    
+    # Print a list of ESN for which their emergency response polygon was considered invalid
+    # and network analysis for that station was therefore not conducted
+    print(poly_not_valid)
+    # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
+    for i in range(len(gdf_list)):
+        response_min = int(response_times[i]/60)
+        gdf_list[i].to_file("%s_esn.geojson" % str(response_min), driver="GeoJSON")
