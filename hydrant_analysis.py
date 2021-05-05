@@ -44,6 +44,7 @@ if __name__ == "__main__":
             hydrants['FLOWRATE'].loc[i] = int(edited_rate)
         flow = hydrants['FLOWRATE'].loc[i]
 
+    # Make a list containing the different hydrant colors based on flow rate (NFPA)
     flow_rate_list = ['blue', 'green', 'orange', 'red', 'unknown']
 
     # List of dataframes for each flow rate
@@ -60,26 +61,45 @@ if __name__ == "__main__":
         hydrant_of_interest = hydrants['geometry'].loc[i]
         # Obtain the flowrate
         flow_rate = hydrants['FLOWRATE'].loc[i]
+        # Figure out what hydrant type the flow_rate corresponds to
+        hydrant_type = ""
+        if (flow_rate == None):
+            hydrant_type = 'unknown' 
+        elif (int(flow_rate) >= 1500):
+            hyrant_type = 'blue'
+        elif (int(flow_rate) >= 1000 and int(flow_rate) < 1500):
+            hydrant_type = 'green'
+        elif (int(flow_rate) >= 500 and int(flow_rate) < 1000):
+            hydrant_type = 'orange'
+        else:
+            hydrant_type = 'red'
+      
         # The buffer is initialized as 183 meters (600ft) - 305 meters = 1000ft
         buffer = make_buffer(hydrant_of_interest, 183)
 
         # Rename the geometry column
         buffer.columns = ['geometry']
         # Add a flowrate column to buffer dataframe
-        buffer["FLOWRATE"] = flow_rate
-        #buffer.assign(FLOWRATE = [flow_rate])
-        #dfmi.loc[:, ('one', 'second')]
-        
+        buffer["FLOWRATE"] = hydrant_type
+        print(buffer)
+        # Add the buffer to the dataframe for all hydrant buffers
         hydrant_polys_gdf = hydrant_polys_gdf.append(buffer)
-        print(hydrant_polys_gdf)
+        #print(hydrant_polys_gdf)
+    
     
     # Filter through rows in hydrant_polys_gdf by flow_rate and append to corresponding GeoDataFrame()
+    #flow_rate_list is list of strings of hydrant types ['blue', 'green', 'orange', 'red', 'unknown']
+    #hydrant_polys_gdf is dataframe containing all polygons 
+    #gdf_list is list of dataframes, one for each of the hydrant types
+    #we need to place each hydrant polygon dataframe in proper gdf_list dataframe based on hydrant type
+
+
     for j in range(len(flow_rate_list)):
-            row = hydrant_polys_gdf.loc[
-                (hydrant_polys_gdf['FLOWRATE'] == flow_rate_list[j]), 
-                ['FLOWRATE', 'geometry']
-            ]
-            gdf_list[j] = gdf_list[j].append(row)
+        row = hydrant_polys_gdf.loc[
+            (hydrant_polys_gdf['FLOWRATE'] == flow_rate_list[j]), 
+            ['FLOWRATE', 'geometry']
+        ]
+        gdf_list[j] = gdf_list[j].append(row)
 
     # Convert each of the flow rate GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
