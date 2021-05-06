@@ -104,7 +104,11 @@ if __name__ == "__main__":
     # Convert each of the flow rate GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
         flow = flow_rate_list[i]
-        gdf_list[i].to_file("%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
+        #check to see if any dataframes are empty and if so, do not export them to geojson
+        if (gdf_list[i]).empty:
+            continue
+        else:
+            gdf_list[i].to_file("%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
     
     # Make the dataframe into a geojson file
     #hydrant_polys_gdf.to_file("%s.geojson" % (WEB_DIR + "hydrant_polys"), driver="GeoJSON")
