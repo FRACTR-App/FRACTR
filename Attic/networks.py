@@ -15,11 +15,12 @@ import pandas
 from descartes import PolygonPatch
 import matplotlib.pyplot as plt
 
+#make sure everything is configured 
 ox.config(log_console=False,
             use_cache=True,
             bidirectional_network_types=['drive_service'])
 
-# Returns a Graph of edges & nodes within the bounding_zone polygon geometry
+# Returns a Graph of edges & nodes within the bounding_zone polygon geometry 
 def make_graph(bounding_zone):
 
     # Create a graph based on a drive_service (all roads including service roads) road network
