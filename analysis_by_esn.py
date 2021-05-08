@@ -143,49 +143,53 @@ if __name__ == "__main__":
         stations.loc[stations.index[i], "FIRE_AgencyId"] = station_agency_id
 
     # Write this information back to file as it may be used later
-    # stations.to_file("fire_station_coords.geojson", driver = "GeoJSON")
+    # stations.to_file("agencyid_fire_station_coords.geojson", driver = "GeoJSON")
     print(stations)
 
     # Step 3: dissolve the ESN polygons into the wider FIRE_AgencyId zones
     zone_polygons = zone_polygons.dissolve(by = "FIRE_AgencyId").reset_index()
+    # zone_polygons.to_file("dissolved_zones.geojson", driver = "GeoJSON")
 
-    # Initialize as many GeoDataFrames as there are response time bins
+    # Initialize as many GeoDataFrames as there are response time bins (typically 2 to 4).
     # Store these new GeoDataFrames in the gdf_list array.
     for i in range(len(response_times)):
         gdf_list.append(gpd.GeoDataFrame())
 
     # Iterate over every station
     for i in tqdm(range(len(stations))):
+        try:
+            # Select the station Point object to be passed as a param to compute_subgraphs()
+            station_of_interest = stations['geometry'].loc[i]
+            print(station_of_interest)
 
-        # Select the station Point object to be passed as a param to compute_subgraphs()
-        station_of_interest = stations['geometry'].loc[i]
-        print(station_of_interest)
+            # Step 4: use the FIRE_AgencyId polygons as bounding zones.
+            # Create the graph for the station's corresponding Fire Dept. zone using the FIRE_AgencyId
+            station_fd_zone = stations['FIRE_AgencyId'].loc[i]
+            zone_coords = zone_polygons.loc[zone_polygons["FIRE_AgencyId"] == station_fd_zone, ["FIRE_AgencyId", "ESN", "geometry"]]
+            print(zone_coords)
+            zone_poly = zone_coords["geometry"].iloc[0]
+        
+            # Create the graph for the emergency service zone if the polygon is valid
+            if not(zone_poly.is_valid):
+                poly_not_valid.append(station_fd_zone)
+                continue
+            else:
+                esn_graph = make_graph(zone_poly)
 
-        # Step 4: use the FIRE_AgencyId polygons as bounding zones.
-        # Create the graph for the station's corresponding Fire Dept. zone using the FIRE_AgencyId
-        station_fd_zone = stations['FIRE_AgencyId'].loc[i]
-        zone_coords = zone_polygons.loc[zone_polygons["FIRE_AgencyId"] == station_fd_zone, ["FIRE_AgencyId", "ESN", "geometry"]]
-        print(zone_coords)
-        zone_poly = zone_coords["geometry"].iloc[0]
-    
-        # Create the graph for the emergency service zone if the polygon is valid
-        if not(zone_poly.is_valid):
-            poly_not_valid.append(station_fd_zone)
-            continue
-        else:
-            esn_graph = make_graph(zone_poly)
+                # Returns a GeoDataFrame with columns "response_time" and "geometry"
+                # where the geometry column contains the response time polygons
+                station_gdf = compute_subgraphs(esn_graph, response_times, station_of_interest)
 
-            # Returns a GeoDataFrame with columns "response_time" and "geometry"
-            # where the geometry column contains the response time polygons
-            station_gdf = compute_subgraphs(esn_graph, response_times, station_of_interest)
-
-            # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
-            for j in range(len(response_times)):
-                row = station_gdf.loc[
-                    (station_gdf['response_time'] == response_times[j]), 
-                    ['response_time', 'geometry']
-                ]
-                gdf_list[j] = gdf_list[j].append(row)
+                # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
+                for j in range(len(response_times)):
+                    row = station_gdf.loc[
+                        (station_gdf['response_time'] == response_times[j]), 
+                        ['response_time', 'geometry']
+                    ]
+                    gdf_list[j] = gdf_list[j].append(row)
+        
+        except TypeError as e:
+            print(e)
     
     # Print a list of ESN for which their emergency response polygon was considered invalid
     # and network analysis for that station was therefore not conducted
