@@ -20,6 +20,27 @@
     <script src="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.2/esri-leaflet.js"></script>
     <script src="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet-geocoder/0.0.1-beta.5/esri-leaflet-geocoder.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet-geocoder/0.0.1-beta.5/esri-leaflet-geocoder.css">
+    <style>
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        .legend {
+            line-height: 18px;
+            color: #555;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+    </style>
 </head>
 <body>
     <div id="mapid" style="height: 98vh; width: 99vw"></div>
@@ -130,6 +151,35 @@
         }
 
         L.control.layers(null, overlays).addTo(mymap);
+
+        function getColor(d) {
+            return d.includes("Green") ? color_list[0] :
+                d.includes("Orange") ? color_list[1] :
+                d.includes("Red") ? color_list[2] :
+                d.includes("unknown") ? color_list[3] :
+                            '#FFEDA0';
+        }
+
+        // Include a map legend
+        var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = function (mymap) {
+            var div = L.DomUtil.create('div', 'info legend'),
+                labels = ["Red hydrants: < 500 gpm",
+                "Orange Hydrants: 500-999 gpm",
+                "Green Hydrants: 1,000–1,499 gpm",
+                "Hydrants with unknown flowrate"];
+
+            // loop through list of polygon labels
+            for (var i = 0; i < labels.length; i++) {
+            div.innerHTML +=
+                    '<i style="background:' + getColor(labels[i]) + '"></i> ' +
+                    labels[i] + '<br>';
+            }
+            return div;
+        };
+
+        legend.addTo(mymap);
 
     </script>
 
