@@ -24,7 +24,7 @@
 <body>
     <div id="mapid" style="height: 98vh; width: 99vw"></div>
     <script>
-        var mymap = L.map('mapid').setView([44.015402801899796, -73.1684031877857], 13);
+	var mymap = L.map('mapid').setView([44.015402801899796, -73.1684031877857], 13);
         
         var baseMap = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>, Data from <a href="https://geodata.vermont.gov/">Vermont GeoData Portal</a>',
@@ -34,15 +34,15 @@
             zoomOffset: -1,
             accessToken: 'pk.eyJ1IjoiamNhbWJlZm9ydCIsImEiOiJja2x6Ym4xaGQwOWUxMnVyM3J2aW54bXhuIn0.vIUQw48WSxIujl74dYNqkA'
         });
-
-        color_list = ['#1e1656', '#8b2a57','#c26b4c', '#cbbb65']
+	
+	color_list = ['#1e1656', '#8b2a57','#c26b4c', '#cbbb65']
         // Path needs the trailing slash
 	base_dir = ""
         
         function poly_style1(feature) {
             return {
                 fillColor: color_list[0],
-                weight: 0.5,
+                weight: 2,
                 opacity: 1,
                 color: 'white',
                 fillOpacity: .3
@@ -52,7 +52,7 @@
         function poly_style2(feature) {
             return {
                 fillColor: color_list[1],
-                weight: 0.5,
+                weight: 2,
                 opacity: 1,
                 color: 'white',
                 fillOpacity: .3
@@ -62,7 +62,7 @@
         function poly_style3(feature) {
             return {
                 fillColor: color_list[2],
-                weight: 0.5,
+                weight: 2,
                 opacity: 1,
                 color: 'white',
                 fillOpacity: .3
@@ -72,7 +72,7 @@
         function poly_style4(feature) {
             return {
                 fillColor: color_list[3],
-                weight: 0.5,
+                weight: 2,
                 opacity: 1,
                 color: 'white',
                 fillOpacity: .3
@@ -111,17 +111,18 @@
             }
         });
 
-        let poly2_path = base_dir.concat("2.geojson");
-        let poly5_path = base_dir.concat("5.geojson");
-        let poly10_path = base_dir.concat("10.geojson");
-        let poly20_path = base_dir.concat("20.geojson");
+        let poly2_path = base_dir.concat("2_esn.geojson");
+        let poly5_path = base_dir.concat("5_esn.geojson");
+        let poly10_path = base_dir.concat("10_esn.geojson");
+        let poly20_path = base_dir.concat("20_esn.geojson");
         let stations_path = base_dir.concat("fire_station_coords.geojson");
+        let zones_path = base_dir.concat("zone_polygons.geojson");
         let dissolved_path = base_dir.concat("dissolved_zones.geojson");
 
-        var poly20 = L.geoJSON(null, {style:poly_style4} );
-        var poly10 = L.geoJSON(null, {style:poly_style3} );
-        var poly5 = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
         var poly2 = L.geoJSON(null, {style:poly_style1} ).addTo(mymap);
+        var poly5 = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
+        var poly10 = L.geoJSON(null, {style:poly_style3} );
+        var poly20 = L.geoJSON(null, {style:poly_style4} );
         var stations = L.geoJSON(null, {style:marker_style} ).addTo(mymap);
         var dissolved = L.geoJSON(null, {style:zones_style} );
 
@@ -150,7 +151,7 @@
             stations.setStyle(marker_style);
             stations.addData(data);
         });
-        
+
         $.getJSON(dissolved_path, function(data) {
             dissolved.setStyle(zones_style);
             dissolved.addData(data);
@@ -161,20 +162,23 @@
         });
 
         baseMap.addTo(mymap);
+	dissolved.addTo(mymap);
+        poly5.addTo(mymap);
+        poly2.addTo(mymap);
         stations.addTo(mymap);
 
-        poly20.setZIndex(605);
-        poly10.setZIndex(610);
-        poly5.setZIndex(615);
-        poly2.setZIndex(620);
+        poly20.bringToFront();
+        poly10.bringToFront();
+        poly5.bringToFront();
+        poly2.bringToFront();
 
         var overlays = {
-            "20 minutes": poly20,
-            "10 minutes": poly10,
-            "5 minutes": poly5,
             "2 minutes": poly2,
+            "5 minutes": poly5,
+            "10 minutes": poly10,
+            "20 minutes": poly20,
             "Stations": stations,
-            "Fire Dept. Emergency Service Zones": dissolved
+	    "Fire Dept. Emergency Service Zones": dissolved
         }
 
         L.control.layers(null, overlays).addTo(mymap);

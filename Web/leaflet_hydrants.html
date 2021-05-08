@@ -24,7 +24,7 @@
 <body>
     <div id="mapid" style="height: 98vh; width: 99vw"></div>
     <script>
-        var mymap = L.map('mapid').setView([44.015402801899796, -73.1684031877857], 13);
+        var mymap = L.map('mapid').setView([44.013886426599974, -73.16578549591442], 13);
         
         var baseMap = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>, Data from <a href="https://geodata.vermont.gov/">Vermont GeoData Portal</a>',
@@ -33,19 +33,19 @@
             tileSize: 512,
             zoomOffset: -1,
             accessToken: 'pk.eyJ1IjoiamNhbWJlZm9ydCIsImEiOiJja2x6Ym4xaGQwOWUxMnVyM3J2aW54bXhuIn0.vIUQw48WSxIujl74dYNqkA'
-        });
+        }).addTo(mymap);
 
-        color_list = ['#1e1656', '#8b2a57','#c26b4c', '#cbbb65']
+        color_list = ['green', 'orange','red', 'gray']
         // Path needs the trailing slash
-	base_dir = ""
+        base_dir = "/Users/john/Documents/College/Courses/CS/CS701/FireDeserts/"
         
         function poly_style1(feature) {
             return {
                 fillColor: color_list[0],
                 weight: 0.5,
                 opacity: 1,
-                color: 'white',
-                fillOpacity: .3
+                color: color_list[0],
+                fillOpacity: .5
             }
         }
 
@@ -54,8 +54,8 @@
                 fillColor: color_list[1],
                 weight: 0.5,
                 opacity: 1,
-                color: 'white',
-                fillOpacity: .3
+                color: color_list[1],
+                fillOpacity: .5
             }
         }
 
@@ -64,8 +64,8 @@
                 fillColor: color_list[2],
                 weight: 0.5,
                 opacity: 1,
-                color: 'white',
-                fillOpacity: .3
+                color: color_list[2],
+                fillOpacity: .5
             }
         }
 
@@ -74,30 +74,11 @@
                 fillColor: color_list[3],
                 weight: 0.5,
                 opacity: 1,
-                color: 'white',
-                fillOpacity: .3
+                color: color_list[3],
+                fillOpacity: .5
             }
         }
 
-        function marker_style(feature) {
-            return {
-                fillColor: 'blue',
-                weight: 2,
-                opacity: 1,
-                color: 'white',
-                fillOpacity: .8
-            }
-        }
-
-        function zones_style(feature) {
-            return {
-                fillColor: 'gray',
-                weight: 2,
-                opacity: 1,
-                color: 'red',
-                fillOpacity: 0
-            }
-        }
 
         // Search Bar
         var searchControl = new L.esri.Controls.Geosearch().addTo(mymap);
@@ -111,70 +92,41 @@
             }
         });
 
-        let poly2_path = base_dir.concat("2.geojson");
-        let poly5_path = base_dir.concat("5.geojson");
-        let poly10_path = base_dir.concat("10.geojson");
-        let poly20_path = base_dir.concat("20.geojson");
-        let stations_path = base_dir.concat("fire_station_coords.geojson");
-        let dissolved_path = base_dir.concat("dissolved_zones.geojson");
+        let green_path = base_dir.concat("hydrant_green.geojson");
+        let orange_path = base_dir.concat("hydrant_orange.geojson");
+        let red_path = base_dir.concat("hydrant_red.geojson");
+        let unknown_path = base_dir.concat("hydrant_unknown.geojson");
 
-        var poly20 = L.geoJSON(null, {style:poly_style4} );
-        var poly10 = L.geoJSON(null, {style:poly_style3} );
-        var poly5 = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
-        var poly2 = L.geoJSON(null, {style:poly_style1} ).addTo(mymap);
-        var stations = L.geoJSON(null, {style:marker_style} ).addTo(mymap);
-        var dissolved = L.geoJSON(null, {style:zones_style} );
+        var green = L.geoJSON(null, {style:poly_style1} ).addTo(mymap);
+        var orange = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
+        var red = L.geoJSON(null, {style:poly_style3} ).addTo(mymap);
+        var unknown = L.geoJSON(null, {style:poly_style4} ).addTo(mymap);
 
-        // Use JQuery to import the geoJSON file
-        $.getJSON(poly2_path, function(data) {
-            poly2.setStyle(poly_style1);
-            poly2.addData(data);
+        $.getJSON(green_path, function(data) {
+            green.setStyle(poly_style1);
+            green.addData(data);
         });
 
-        $.getJSON(poly5_path, function(data) {
-            poly5.setStyle(poly_style2);
-            poly5.addData(data);
+        $.getJSON(orange_path, function(data) {
+            orange.setStyle(poly_style2);
+            orange.addData(data);
         });
 
-        $.getJSON(poly10_path, function(data) {
-            poly10.setStyle(poly_style3);
-            poly10.addData(data);
+        $.getJSON(red_path, function(data) {
+            red.setStyle(poly_style3);
+            red.addData(data);
         });
 
-        $.getJSON(poly20_path, function(data) {
-            poly20.setStyle(poly_style4);
-            poly20.addData(data);
-        });
-
-        $.getJSON(stations_path, function(data) {
-            stations.setStyle(marker_style);
-            stations.addData(data);
+        $.getJSON(unknown_path, function(data) {
+            unknown.setStyle(poly_style4);
+            unknown.addData(data);
         });
         
-        $.getJSON(dissolved_path, function(data) {
-            dissolved.setStyle(zones_style);
-            dissolved.addData(data);
-        });
-
-        stations.bindPopup(function (layer) {
-            return layer.feature.properties.TOWNNAME;
-        });
-
-        baseMap.addTo(mymap);
-        stations.addTo(mymap);
-
-        poly20.setZIndex(605);
-        poly10.setZIndex(610);
-        poly5.setZIndex(615);
-        poly2.setZIndex(620);
-
         var overlays = {
-            "20 minutes": poly20,
-            "10 minutes": poly10,
-            "5 minutes": poly5,
-            "2 minutes": poly2,
-            "Stations": stations,
-            "Fire Dept. Emergency Service Zones": dissolved
+            "Red hydrants: < 500 gpm": red,
+            "Orange Hydrants: 500-999 gpm": orange,
+            "Green Hydrants: 1,000–1,499 gpm": green,
+            "Hydrants with unknown flowrate": unknown
         }
 
         L.control.layers(null, overlays).addTo(mymap);
