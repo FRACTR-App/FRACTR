@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="logo" type="image/png" href="/images/logo.png">
+
+    <title>FRACTR</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark navbar-expand-md">
+        <div class="container">
+            <a class="navbar-brand" href="home.html">
+                <img src="./images/logo2.png" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                FRACTR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link" href="leaflet_esn.html">Response Times by Service Zone</a>
+                    <a class="nav-link" href="leaflet.html">Response Times Across VT</a>
+                    <a class="nav-link" href="leaflet_hydrants.html">Fire Hydrant Coverage</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="p-4 my-4 bg-light text-dark text-center rounded-3">
+            <h1>FRACTR: Fire Resource Area Coverage & Response Times</h1>
+            <h5>
+                Providing Vermont with a visual analysis of fire department response times and water resources in order to 
+                support regional emergency planning and public awareness
+            </h5>
+        </div>
+
+        <div class="row text-center">
+            <div class="col-md-6">
+                <a href="response_by_esn.html"><img src="./images/esn.png" class="img-responsive" style="width:100%"
+                        alt="map of response times by service zones"></a>
+                <p>Map of response times from fire stations, bounded by serivce zones</p>
+            </div>
+            <div class="col-md-6">
+                <a href="response_by_esn.html"><img src="./images/state.png" class="img-responsive" style="width:100%"
+                        alt="map of response times"></a>
+                <p>Map of response times from fire stations, unbounded</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="text-center">Why Are These Maps Important?</h4>
+                <p class="text-justify">
+                    In the fire service, timing is key, and fire departments strive to respond as effectively 
+                    and safely as possible with the goal of protecting life, property, and the environment. 
+                    On any given call, even an increased response time of several minutes can have profound 
+                    consequences on medical outcomes and fire growth. Additionally, fire crews who make it to 
+                    the scene require access to the proper tools and resources to mitigate the threat (such as 
+                    a nearby water source in the event of a fire). As a result, pre-incident plans, that includes 
+                    maps of response times and water resource locations, should be accessible to fire departments, 
+                    regional planning commissions, and local residents, giving them time to prepare for incidents 
+                    in harder to reach areas and making it possible to identify sites where future fire stations 
+                    can be built to maximize coverage.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h4 class="text-center">The Map Building Process</h4>
+                <ol class="text-justify">
+                    <li>Site Locations, Fire Dept. Emergency Service Zones, and State of Vermont boundary datasets are all collected from the Vermont Open Geodata Portal. Road data is provided by Open Street Maps. </li>
+                    <li>Utilizing the Geopandas and OSMnx Python packages, we performed network analyses to create multiple spatial polygon layers based on the response times from every fire station. Dijkstra's shortest-path algorithm is performed on the street network graph. Road distances and speed limits are used to calculate the travel time across an edge. </li>
+                    <li>Using the Leaflet JS package, we display these polygon layers to an interactive map.</li>
+                </ol>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="text-center">Ethical Implications</h4>
+                <p class="text-justify">
+                    These maps offer rough estimates of response times and should not be interpreted as exact, 
+                    reliable fact. Additionally, future homeowners and insurance companies might use our application 
+                    as a tool to discriminate between properties located near and far away from fire stations. 
+                    Consequently, future homeowners may be less likely to purchase homes located outside of certain 
+                    response time zones, and insurance companies could choose to raise insurance costs for homes in 
+                    these areas. We recognize these possibilities and remind our users that these maps offer estimates 
+                    and should be used for public governance, citizen awareness, and emergency planning.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h4 class="text-center">Fire Safety Resources</h4>
+                <ul style="list-style-type:none;">
+                    <li>
+                        <a href="https://www.nfpa.org/Public-Education">National Fire Protection Association</a>
+                    </li>
+                    <li>
+                        <a href="https://www.usfa.fema.gov/prevention/outreach/#materials">U.S. Fire Administration</a>
+                    </li>
+                    <li>
+                        <a href="https://firesafety.vermont.gov/pubed">Vermont Division of Fire Safety</a>
+                    </li>
+                    <li>
+                        <a href="https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/fire.html">American Red Cross</a>
+                    </li>
+                    <li>
+                        <a href="https://geodata.vermont.gov/">Vermont Open Geodata Portal</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="p-4 my-4 bg-light text-dark text-center rounded-3">
+            <h4>Links to our code repository and report</h4>
+            <ul class="list-inline">
+                <li class="list-inline-item"><a href="https://github.com/This-blank-Is-On-Fire/FRACTR.git"><i
+                            class="bi-github" role="img" aria-label="GitHub"></i></a></li>
+                <li class="list-inline-item">Add link to report PDF here</li>
+            </ul>
+            <h4>Meet the developers</h4>
+            <p>This is a Middlebury College Department of Computer Science Senior Seminar project under the
+                guidance of Prof.
+                Andrea Vaccari.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul style="list-style-type:none;">
+                        <li><i class="bi bi-person-fill"></i>John Cambefort</li>
+                        <li>Middlebury College 2021.5</li>
+                        <li>jcambefort@middlebury.edu</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul style="list-style-type:none;">
+                        <li><i class="bi bi-person-fill"></i>Halcyon Brown</li>
+                        <li>Middlebury College 2021.5</li>
+                        <li>halcyonb@middlebury.edu</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

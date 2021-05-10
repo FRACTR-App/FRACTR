@@ -58,7 +58,7 @@
 	
 	color_list = ['#1e1656', '#8b2a57','#c26b4c', '#cbbb65']
         // Path needs the trailing slash
-	base_dir = ""
+	base_dir = "/Users/halcyonbrown/SmokenMaps/FireDeserts/Web/leaflet_esn.html"
         
         function poly_style1(feature) {
             return {
@@ -132,10 +132,10 @@
             }
         });
 
-        let poly2_path = base_dir.concat("2_esn.geojson");
-        let poly5_path = base_dir.concat("5_esn.geojson");
-        let poly10_path = base_dir.concat("10_esn.geojson");
-        let poly20_path = base_dir.concat("20_esn.geojson");
+        let poly2_path = base_dir.concat("2.geojson");
+        let poly5_path = base_dir.concat("5.geojson");
+        let poly10_path = base_dir.concat("10.geojson");
+        let poly20_path = base_dir.concat("20.geojson");
         let stations_path = base_dir.concat("fire_station_coords.geojson");
         let zones_path = base_dir.concat("zone_polygons.geojson");
         let dissolved_path = base_dir.concat("dissolved_zones.geojson");
@@ -183,7 +183,7 @@
         });
 
         baseMap.addTo(mymap);
-	dissolved.addTo(mymap);
+	    dissolved.addTo(mymap);
         poly5.addTo(mymap);
         poly2.addTo(mymap);
         stations.addTo(mymap);

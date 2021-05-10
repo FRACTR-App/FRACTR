@@ -1,38 +1,55 @@
 <!DOCTYPE html>
+<html lang="en">
+
 <head>
+    <!-- Required meta tags -->
     <title>Smoke n' Maps</title>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <?xml version="1.0" encoding="UTF-8"?>
+
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="style.css">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-   crossorigin=""/>
-   
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+
     <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
 
     <!-- Make sure you put this AFTER Leaflet's CSS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-    crossorigin=""></script>
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 
     <!-- ESRI Leaflet, for search bar functionality -->
     <script src="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.2/esri-leaflet.js"></script>
-    <script src="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet-geocoder/0.0.1-beta.5/esri-leaflet-geocoder.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet-geocoder/0.0.1-beta.5/esri-leaflet-geocoder.css">
+    <script
+        src="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet-geocoder/0.0.1-beta.5/esri-leaflet-geocoder.js"></script>
+    <link rel="stylesheet" type="text/css"
+        href="https://cdn-geoweb.s3.amazonaws.com/esri-leaflet-geocoder/0.0.1-beta.5/esri-leaflet-geocoder.css">
     <style>
         .info {
             padding: 6px 8px;
             font: 14px/16px Arial, Helvetica, sans-serif;
             background: white;
-            background: rgba(255,255,255,0.8);
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             border-radius: 5px;
         }
+
         .legend {
             line-height: 18px;
             color: #555;
         }
+
         .legend i {
             width: 18px;
             height: 18px;
@@ -42,11 +59,42 @@
         }
     </style>
 </head>
+
 <body>
+    
+    <nav class="navbar navbar-dark bg-dark navbar-expand-md">
+        <div class="container">
+            <a class="navbar-brand" href="home.html">
+                <img src="./images/logo2.png" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                FRACTR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link" href="leaflet_esn.html">Response Times by Service Zones</a>
+                    <a class="nav-link" href="leaflet.html">Response Times Across VT</a>
+                    <a class="nav-link" href="leaflet_hydrants.html">Fire Hydrant Coverage</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container text-center">
+        <div class="p-4 my-4 bg-light text-dark rounded-3">
+            <h2>Map of Response Times, bounded by the state of Vermont</h2>
+            <p>Here is a little more about the map...</p>    
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+
+
     <div id="mapid" style="height: 98vh; width: 99vw"></div>
     <script>
         var mymap = L.map('mapid').setView([44.015402801899796, -73.1684031877857], 13);
-        
+
         var baseMap = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>, Data from <a href="https://geodata.vermont.gov/">Vermont GeoData Portal</a>',
             maxZoom: 18,
@@ -56,10 +104,10 @@
             accessToken: 'pk.eyJ1IjoiamNhbWJlZm9ydCIsImEiOiJja2x6Ym4xaGQwOWUxMnVyM3J2aW54bXhuIn0.vIUQw48WSxIujl74dYNqkA'
         });
 
-        color_list = ['#1e1656', '#8b2a57','#c26b4c', '#cbbb65']
+        color_list = ['#1e1656', '#8b2a57', '#c26b4c', '#cbbb65']
         // Path needs the trailing slash
-	base_dir = ""
-        
+        base_dir = "/Users/halcyonbrown/SmokenMaps/FireDeserts/"
+
         function poly_style1(feature) {
             return {
                 fillColor: color_list[0],
@@ -124,10 +172,10 @@
         var searchControl = new L.esri.Controls.Geosearch().addTo(mymap);
 
         var results = new L.LayerGroup().addTo(mymap);
-        searchControl.on('results', function(data) {
+        searchControl.on('results', function (data) {
             results.clearLayers();
             for (var i = data.results.length - 1; i >= 0; i--) {
-                var marker = L.marker(data.results[i].latlng, {fillColor: "green"});
+                var marker = L.marker(data.results[i].latlng, { fillColor: "green" });
                 results.addLayer(marker);
             }
         });
@@ -139,40 +187,40 @@
         let stations_path = base_dir.concat("fire_station_coords.geojson");
         let dissolved_path = base_dir.concat("dissolved_zones.geojson");
 
-        var poly2 = L.geoJSON(null, {style:poly_style1} ).addTo(mymap);
-        var poly5 = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
-        var poly10 = L.geoJSON(null, {style:poly_style3} );
-        var poly20 = L.geoJSON(null, {style:poly_style4} );
-        var stations = L.geoJSON(null, {style:marker_style} ).addTo(mymap);
-        var dissolved = L.geoJSON(null, {style:zones_style} );
+        var poly2 = L.geoJSON(null, { style: poly_style1 }).addTo(mymap);
+        var poly5 = L.geoJSON(null, { style: poly_style2 }).addTo(mymap);
+        var poly10 = L.geoJSON(null, { style: poly_style3 });
+        var poly20 = L.geoJSON(null, { style: poly_style4 });
+        var stations = L.geoJSON(null, { style: marker_style }).addTo(mymap);
+        var dissolved = L.geoJSON(null, { style: zones_style });
 
         // Use JQuery to import the geoJSON file
-        $.getJSON(poly2_path, function(data) {
+        $.getJSON(poly2_path, function (data) {
             poly2.setStyle(poly_style1);
             poly2.addData(data);
         });
 
-        $.getJSON(poly5_path, function(data) {
+        $.getJSON(poly5_path, function (data) {
             poly5.setStyle(poly_style2);
             poly5.addData(data);
         });
 
-        $.getJSON(poly10_path, function(data) {
+        $.getJSON(poly10_path, function (data) {
             poly10.setStyle(poly_style3);
             poly10.addData(data);
         });
 
-        $.getJSON(poly20_path, function(data) {
+        $.getJSON(poly20_path, function (data) {
             poly20.setStyle(poly_style4);
             poly20.addData(data);
         });
 
-        $.getJSON(stations_path, function(data) {
+        $.getJSON(stations_path, function (data) {
             stations.setStyle(marker_style);
             stations.addData(data);
         });
-        
-        $.getJSON(dissolved_path, function(data) {
+
+        $.getJSON(dissolved_path, function (data) {
             dissolved.setStyle(zones_style);
             dissolved.addData(data);
         });
@@ -186,10 +234,10 @@
 
         // Allow user to toggle layers
         var overlays = {
-            "20 minutes": poly20,
-            "10 minutes": poly10,
-            "5 minutes": poly5,
             "2 minutes": poly2,
+            "5 minutes": poly5,
+            "10 minutes": poly10,
+            "20 minutes": poly20,
             "Stations": stations,
             "Fire Dept. Emergency Service Zones": dissolved
         }
@@ -199,24 +247,24 @@
         function getColor(d) {
             return d.includes("2 ") ? color_list[0] :
                 d.includes("5 ") ? color_list[1] :
-                d.includes("10 ") ? color_list[2] :
-                d.includes("20 ") ? color_list[3] :
+                    d.includes("10 ") ? color_list[2] :
+                        d.includes("20 ") ? color_list[3] :
                             '#FFEDA0';
         }
 
         // Include a map legend
-        var legend = L.control({position: 'bottomright'});
+        var legend = L.control({ position: 'bottomright' });
 
         legend.onAdd = function (mymap) {
             var div = L.DomUtil.create('div', 'info legend'),
                 labels = ["2 Minute Response",
-                "5 Minute Response",
-                "10 Minute Response",
-                "20 Minute Reponse"];
+                    "5 Minute Response",
+                    "10 Minute Response",
+                    "20 Minute Reponse"];
 
             // loop through list of polygon labels
             for (var i = 0; i < labels.length; i++) {
-            div.innerHTML +=
+                div.innerHTML +=
                     '<i style="background:' + getColor(labels[i]) + '"></i> ' +
                     labels[i] + '<br>';
             }
@@ -230,4 +278,3 @@
 </body>
 
 </html>
-
