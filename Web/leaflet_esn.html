@@ -140,8 +140,8 @@
         let zones_path = base_dir.concat("zone_polygons.geojson");
         let dissolved_path = base_dir.concat("dissolved_zones.geojson");
 
-        var poly2 = L.geoJSON(null, {style:poly_style1} ).addTo(mymap);
-        var poly5 = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
+        var poly2 = L.geoJSON(null, {style:poly_style1} );
+        var poly5 = L.geoJSON(null, {style:poly_style2} );
         var poly10 = L.geoJSON(null, {style:poly_style3} );
         var poly20 = L.geoJSON(null, {style:poly_style4} );
         var stations = L.geoJSON(null, {style:marker_style} ).addTo(mymap);
