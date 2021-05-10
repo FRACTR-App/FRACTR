@@ -183,15 +183,25 @@
         });
 
         baseMap.addTo(mymap);
-	dissolved.addTo(mymap);
-        poly5.addTo(mymap);
-        poly2.addTo(mymap);
+	    dissolved.addTo(mymap);
         stations.addTo(mymap);
 
-        poly20.bringToFront();
-        poly10.bringToFront();
-        poly5.bringToFront();
-        poly2.bringToFront();
+        // Add the 20 minute polygon layer first (should be on the bottom)
+        poly20.addTo(mymap);
+
+        // Wait at least half a second to allow for other geojsons to download
+        // Then add each one to the map, in the order 10, then 5, then 2 on top
+        setTimeout(function() {
+            poly10.addTo(mymap);
+        }, 550);
+
+        setTimeout(function() {
+            poly5.addTo(mymap);
+        }, 600);
+
+        setTimeout(function() {
+            poly2.addTo(mymap);
+        }, 600);
 
         // Allow user to toggle layers
         var overlays = {
