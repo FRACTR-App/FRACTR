@@ -183,8 +183,8 @@
         let zones_path = base_dir.concat("zone_polygons.geojson");
         let dissolved_path = base_dir.concat("dissolved_zones.geojson");
 
-        var poly2 = L.geoJSON(null, {style:poly_style1} ).addTo(mymap);
-        var poly5 = L.geoJSON(null, {style:poly_style2} ).addTo(mymap);
+        var poly2 = L.geoJSON(null, {style:poly_style1} );
+        var poly5 = L.geoJSON(null, {style:poly_style2} );
         var poly10 = L.geoJSON(null, {style:poly_style3} );
         var poly20 = L.geoJSON(null, {style:poly_style4} );
         var stations = L.geoJSON(null, {style:marker_style} ).addTo(mymap);
@@ -227,14 +227,24 @@
 
         baseMap.addTo(mymap);
 	    dissolved.addTo(mymap);
-        poly5.addTo(mymap);
-        poly2.addTo(mymap);
         stations.addTo(mymap);
 
-        poly20.bringToFront();
-        poly10.bringToFront();
-        poly5.bringToFront();
-        poly2.bringToFront();
+        // Add the 20 minute polygon layer first (should be on the bottom)
+        poly20.addTo(mymap);
+
+        // Wait at least half a second to allow for other geojsons to download
+        // Then add each one to the map, in the order 10, then 5, then 2 on top
+        setTimeout(function() {
+            poly10.addTo(mymap);
+        }, 1000);
+
+        setTimeout(function() {
+            poly5.addTo(mymap);
+        }, 1100);
+
+        setTimeout(function() {
+            poly2.addTo(mymap);
+        }, 1200);
 
         // Allow user to toggle layers
         var overlays = {

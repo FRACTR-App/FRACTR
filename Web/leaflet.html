@@ -106,8 +106,8 @@
 
         color_list = ['#1e1656', '#8b2a57', '#c26b4c', '#cbbb65']
         // Path needs the trailing slash
-        base_dir = "/Users/halcyonbrown/SmokenMaps/FireDeserts/"
-
+	    base_dir = ""
+        
         function poly_style1(feature) {
             return {
                 fillColor: color_list[0],
@@ -187,12 +187,12 @@
         let stations_path = base_dir.concat("fire_station_coords.geojson");
         let dissolved_path = base_dir.concat("dissolved_zones.geojson");
 
-        var poly2 = L.geoJSON(null, { style: poly_style1 }).addTo(mymap);
-        var poly5 = L.geoJSON(null, { style: poly_style2 }).addTo(mymap);
-        var poly10 = L.geoJSON(null, { style: poly_style3 });
-        var poly20 = L.geoJSON(null, { style: poly_style4 });
-        var stations = L.geoJSON(null, { style: marker_style }).addTo(mymap);
-        var dissolved = L.geoJSON(null, { style: zones_style });
+        var poly2 = L.geoJSON(null, {style:poly_style1} );
+        var poly5 = L.geoJSON(null, {style:poly_style2} );
+        var poly10 = L.geoJSON(null, {style:poly_style3} );
+        var poly20 = L.geoJSON(null, {style:poly_style4} ).addTo(mymap);
+        var stations = L.geoJSON(null, {style:marker_style} ).addTo(mymap);
+        var dissolved = L.geoJSON(null, {style:zones_style} );
 
         // Use JQuery to import the geoJSON file
         $.getJSON(poly2_path, function (data) {
@@ -231,6 +231,23 @@
 
         baseMap.addTo(mymap);
         stations.addTo(mymap);
+        
+        // Add the 20 minute polygon layer first (should be on the bottom)
+        poly20.addTo(mymap);
+
+        // Wait at least half a second to allow for other geojsons to download
+        // Then add each one to the map, in the order 10, then 5, then 2 on top
+        setTimeout(function() {
+            poly10.addTo(mymap);
+        }, 1000);
+
+        setTimeout(function() {
+            poly5.addTo(mymap);
+        }, 1100);
+
+        setTimeout(function() {
+            poly2.addTo(mymap);
+        }, 1200);
 
         // Allow user to toggle layers
         var overlays = {
