@@ -13,7 +13,7 @@
     <!-- Local CSS -->
     <link rel="stylesheet" href="style.css">
 
-    <link rel="logo" type="image/png" href="/images/logo.png">
+    <link rel="logo" type="image/png" href="images/logo.png">
 
     <title>FRACTR</title>
 </head>
@@ -21,7 +21,7 @@
 <body>
     <nav class="navbar navbar-dark bg-dark navbar-expand-md">
         <div class="container">
-            <a class="navbar-brand" href="home.html">
+            <a class="navbar-brand" href="index.html">
                 <img src="./images/logo2.png" alt="" width="30" height="24" class="d-inline-block align-text-top">
                 FRACTR
             </a>
@@ -31,9 +31,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-link" href="leaflet_esn.html">Response Times by Service Zone</a>
-                    <a class="nav-link" href="leaflet.html">Response Times Across VT</a>
-                    <a class="nav-link" href="leaflet_hydrants.html">Fire Hydrant Coverage</a>
+                    <a class="nav-link" href="esn/leaflet_esn.html">Response Times by Service Zone</a>
+                    <a class="nav-link" href="state/leaflet_state.html">Response Times Across VT</a>
+                    <a class="nav-link" href="hydrants/leaflet_hydrants.html">Fire Hydrant Coverage</a>
                 </div>
             </div>
         </div>
@@ -49,12 +49,12 @@
 
         <div class="row text-center">
             <div class="col-md-6">
-                <a href="response_by_esn.html"><img src="./images/esn.png" class="img-responsive" style="width:100%"
+                <a href="esn/leaflet_esn.html"><img src="./images/esn.png" class="img-responsive" style="width:100%"
                         alt="map of response times by service zones"></a>
                 <p>Map of response times from fire stations, bounded by serivce zones</p>
             </div>
             <div class="col-md-6">
-                <a href="response_by_esn.html"><img src="./images/state.png" class="img-responsive" style="width:100%"
+                <a href="state/leaflet_state.html"><img src="./images/state.png" class="img-responsive" style="width:100%"
                         alt="map of response times"></a>
                 <p>Map of response times from fire stations, unbounded</p>
             </div>
