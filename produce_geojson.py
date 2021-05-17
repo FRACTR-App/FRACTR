@@ -10,11 +10,8 @@ def hydrants_to_geojson(output_file_name, input_file_path):
     gdf = gpd.read_file(hydrant_path)
     hydrant_coords = gdf[["COUNTY", "HYDRANTID", "HYDRANTTYPE", "FLOWRATE", "geometry"]]
 
-    #hydrant_coords = gdf["geometry"]
-    #print(hydrant_coords)
-
     print("Outputting %s.geojson..." % output_file_name)
-    hydrant_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
+    hydrant_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
 
 # Creates a 2-column geojson file containing the emergency zone polygon coordinates and ESN number
 # from a json file collected from the Vermont Geoportal API
@@ -31,11 +28,8 @@ def zone_to_geojson(output_file_name, input_file_path):
     zone_polygons.loc[zone_polygons["FIRE_AgencyId"].str.contains("WEYBRIDGE"),
         "FIRE_AgencyId"] = "WEYBRIDGE"
 
-    # Merge polygons with the same FIRE_AgencyId (i.e. of the same FD ESN)
-    # clean_zone = zone_polygons.dissolve(by = "FIRE_AgencyId")
-
     print("Outputting %s.geojson..." % output_file_name)
-    zone_polygons.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
+    zone_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
 
     return gdf
 

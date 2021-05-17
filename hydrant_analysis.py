@@ -28,7 +28,7 @@ def make_buffer(hydrant, radius):
 if __name__ == "__main__":
 
     # Read in hydrant coordinate data
-    hydrants = gpd.read_file("hydrant_coords.geojson")
+    hydrants = gpd.read_file("data/hydrant_coords.geojson")
     
     # Project the hydrant coordinates to Mercator
     hydrants = hydrants.to_crs(epsg=3395)
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         if (gdf_list[i]).empty:
             continue
         else:
-            gdf_list[i].to_file("%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
+            gdf_list[i].to_file("data/%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
     
     # Make the dataframe into a geojson file
-    #hydrant_polys_gdf.to_file("%s.geojson" % (WEB_DIR + "hydrant_polys"), driver="GeoJSON")
+    #hydrant_polys_gdf.to_file("data/%s.geojson" % (WEB_DIR + "hydrant_polys"), driver="GeoJSON")
