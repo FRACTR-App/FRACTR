@@ -43,7 +43,7 @@ def make_graph(bounding_zone):
 
 
 # Returns a GeoDataFrame containing polygon geometries and a response time column
-def compute_subgraphs(G, response_times, station):
+def compute_subgraphs(G, response_times, station, agency_id):
     
     # initialize the geodataframe
     station_polygons = gpd.GeoDataFrame()
@@ -77,6 +77,9 @@ def compute_subgraphs(G, response_times, station):
         
         # Add the response time column
         poly_as_gdf['response_time'] = response_time
+
+        # Add the agency id column
+        poly_as_gdf['FIRE_AgencyId'] = agency_id
         
         # Append the polygon for that station to our GeoDataFrame
         station_polygons = station_polygons.append(poly_as_gdf)
@@ -95,6 +98,9 @@ if __name__ == "__main__":
     # Read in the bounding zone to be used for the graph
     bounding_zone = gpd.read_file("vermont_state_polygon.geojson")["geometry"].loc[0]
     print("Making graph...")
+
+    # Read in the emergency service zones to be used for subgraphs
+    zone_polygons = gpd.read_file("zone_polygons.geojson")
 
     # Store the Vermont graph in a .graphml file so we don't need to recompute
     # it every time from the geoJson
@@ -115,6 +121,16 @@ if __name__ == "__main__":
     # List of dataframes for each response time
     gdf_list = []
 
+    #We need to add a Fire_AgencyId column to the stations dataset so that our response geojsons can also contain this column
+    # Step 1: create a "FIRE_AgencyId" column in the stations dataset
+    stations["FIRE_AgencyId"] = ""
+
+    # Step 2: For every station (and its ESN), fetch the ESN's FIRE_AgencyId from zones
+    for i in range(len(stations)):
+        station_esn = stations["ESN"].loc[i]
+        station_agency_id = zone_polygons.loc[station_esn == zone_polygons["ESN"], ["FIRE_AgencyId"]].values[0][0]
+        stations.loc[stations.index[i], "FIRE_AgencyId"] = station_agency_id
+
     # Initialize as many GeoDataFrames as there are response time bins
     # Store these new GeoDataFrames in the gdf_list array.
     for i in range(len(response_times)):
@@ -126,15 +142,18 @@ if __name__ == "__main__":
         # Select the station Point object to be passed as a param to compute_subgraphs()
         station_of_interest = stations['geometry'].loc[i]
 
+        #Find the station's Fire Agency ID
+        agency_id = stations['FIRE_AgencyId'].loc[i]
+
         # Returns a GeoDataFrame with columns "response_time" and "geometry"
         # where the geometry column contains the response time polygons
-        station_gdf = compute_subgraphs(G, response_times, station_of_interest)
+        station_gdf = compute_subgraphs(G, response_times, station_of_interest, agency_id)
 
         # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
         for j in range(len(response_times)):
             row = station_gdf.loc[
                 (station_gdf['response_time'] == response_times[j]), 
-                ['response_time', 'geometry']
+                ['response_time', 'FIRE_AgencyId', 'geometry']
             ]
             gdf_list[j] = gdf_list[j].append(row)
 
