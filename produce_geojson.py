@@ -1,3 +1,4 @@
+import os
 import geopandas as gpd
 from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, API_VERMONT_PATH, request_API_data
 
@@ -50,7 +51,7 @@ def stations_to_geojson(output_file_name, input_file_path):
         ["TOWNNAME", "ESN", "geometry"]]
 
     print("Outputting %s.geojson..." % output_file_name)
-    station_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
+    station_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
     return station_coords
 
 
@@ -63,7 +64,7 @@ def vermont_to_geojson(output_file_name, input_file_path):
     vermont_coords = gdf['geometry']
     
     print("Outputting %s.geojson..." % output_file_name)
-    vermont_coords.to_file("%s.geojson" % output_file_name, driver="GeoJSON")
+    vermont_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
     return vermont_coords
 
 
@@ -71,13 +72,17 @@ def vermont_to_geojson(output_file_name, input_file_path):
 
 if __name__ == "__main__":
 
+    # Make sure the data folder exists (where all json / geojsons are output)
+    if not os.path.exists('data'):
+        os.makedirs('data')
+
     # Generate JSON files collected from the GeoPortal API to be ingested by GeoPandas
-    # request_API_data()
+    request_API_data()
 
     # Create new GEOJSON files by filtering through JSON data for relevant columns,
     # output geojson files
-    #stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
-    # vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
-    # zone_to_geojson("zone_polygons", API_ZONES_PATH)
+    stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
+    vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
+    zone_to_geojson("zone_polygons", API_ZONES_PATH)
     hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
     
