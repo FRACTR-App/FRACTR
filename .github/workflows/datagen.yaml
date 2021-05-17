@@ -38,17 +38,17 @@ jobs:
       run:
         python produce_geojson.py
 
-    - name: Generate VT State polygons
-      run: |
-        python network_analysis.py
+    # - name: Generate VT State polygons
+    #   run: |
+    #     python network_analysis.py
 
     # - name: Generate ESN polygons
     #   run: |
     #     python analysis_by_esn.py
 
-    - name: Generate hydrant geometries
-      run: |
-        python hydrant_analysis.py
+    # - name: Generate hydrant geometries
+    #   run: |
+    #     python hydrant_analysis.py
 
     - name: Push 'data' dir with new files to Web repository
       id: push_directory
@@ -61,4 +61,3 @@ jobs:
         destination-repository-name: 'This-blank-Is-On-Fire.github.io'
         user-email: jcambefort@middlebury.edu
         commit-message: See ORIGIN_COMMIT from $GITHUB_REF
-        target-branch: main
