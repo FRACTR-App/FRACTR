@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # List of dataframes for each response time
     gdf_list = []
 
-    #We need to add a Fire_AgencyId column to the stations dataset so that our response geojsons can also contain this column
+    # We need to add a Fire_AgencyId column to the stations dataset so that our response geojsons can also contain this column
     # Step 1: create a "FIRE_AgencyId" column in the stations dataset
     stations["FIRE_AgencyId"] = ""
 
