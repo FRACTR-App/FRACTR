@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     # Initialize as many GeoDataFrames as there are response time bins
     # Store these new GeoDataFrames in the gdf_list array.
-    for i in range(len(response_times)):
+    for i in range(len(RESPONSE_TIMES)):
         gdf_list.append(gpd.GeoDataFrame())
 
     # iterate over every station
@@ -147,17 +147,17 @@ if __name__ == "__main__":
 
         # Returns a GeoDataFrame with columns "response_time" and "geometry"
         # where the geometry column contains the response time polygons
-        station_gdf = compute_subgraphs(G, response_times, station_of_interest, agency_id)
+        station_gdf = compute_subgraphs(G, RESPONSE_TIMES, station_of_interest, agency_id)
 
         # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
-        for j in range(len(response_times)):
+        for j in range(len(RESPONSE_TIMES)):
             row = station_gdf.loc[
-                (station_gdf['response_time'] == response_times[j]), 
+                (station_gdf['response_time'] == RESPONSE_TIMES[j]), 
                 ['response_time', 'FIRE_AgencyId', 'geometry']
             ]
             gdf_list[j] = gdf_list[j].append(row)
 
     # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
-        response_min = int(response_times[i]/60)
+        response_min = int(RESPONSE_TIMES[i]/60)
         gdf_list[i].to_file("data/%s.geojson" % str(response_min), driver="GeoJSON")
