@@ -55,7 +55,7 @@ jobs:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       with:
         source_file: 'data'
-        destination_repo: 'This-blank-Is-On-Fire/This-blank-Is-On-Fire.github.io'
+        destination_repo: 'This-blank-Is-On-Fire/Website'
         user_email: 'jcambefort@middlebury.edu'
         user_name: 'johncambefort'
         destination_branch: 'master'
