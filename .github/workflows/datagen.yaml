@@ -19,24 +19,29 @@ jobs:
         # persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
         # fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
 
-    - name: Set up Conda Python 3.9
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        activate-environment: ox
-        python-version: 3.9.2
-
-    - name: Install OSMNX
+    - name: Add two test files
       run: |
-        conda install -c conda-forge osmnx 
+        touch data/test1.txt
+        touch data/test2.txt
 
-    - name: Install other python packages
-      run: |
-        pip install tqdm
-        pip install alphashape
+    # - name: Set up Conda Python 3.9
+    #   uses: conda-incubator/setup-miniconda@v2
+    #   with:
+    #     activate-environment: ox
+    #     python-version: 3.9.2
 
-    - name: Fetch API data, filter & convert to geoJson
-      run:
-        python produce_geojson.py
+    # - name: Install OSMNX
+    #   run: |
+    #     conda install -c conda-forge osmnx 
+
+    # - name: Install other python packages
+    #   run: |
+    #     pip install tqdm
+    #     pip install alphashape
+
+    # - name: Fetch API data, filter & convert to geoJson
+    #   run:
+    #     python produce_geojson.py
 
     # - name: Generate VT State polygons
     #   run: |
@@ -52,12 +57,12 @@ jobs:
 
     - name: Push 'data' dir with new files to Web repository
       id: push_directory
-      uses: cpina/github-action-push-to-another-repository@main
+      uses: dmnemec/copy_file_to_another_repo_action@main
       env:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       with:
-        source-directory: 'data'
-        destination-github-username: 'This-blank-Is-On-Fire'
-        destination-repository-name: 'This-blank-Is-On-Fire.github.io'
-        user-email: jcambefort@middlebury.edu
-        commit-message: See ORIGIN_COMMIT from $GITHUB_REF
+        source_file: 'data'
+        destination_repo: 'This-blank-Is-On-Fire/This-blank-Is-On-Fire.github.io'
+        user_email: 'jcambefort@middlebury.edu'
+        user_name: 'johncambefort'
+        # commit_message: See ORIGIN_COMMIT from $GITHUB_REF
