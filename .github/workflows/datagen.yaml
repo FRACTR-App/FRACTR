@@ -21,6 +21,7 @@ jobs:
 
     - name: Add two test files
       run: |
+        mkdir data
         touch data/test1.txt
         touch data/test2.txt
 
