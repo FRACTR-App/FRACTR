@@ -16,7 +16,6 @@ ox.config(log_console=False,
             use_cache=True,
             bidirectional_network_types=['drive_service'])
 
-
 # Returns a response polygon (dataframe) that is bounded by its corresponding emergency service zone
 def intersect_polygons(zone_polygon, response_polygon, agency_id, response_time):
     zone_series = gpd.GeoSeries(zone_polygon, crs=3395)
@@ -24,21 +23,10 @@ def intersect_polygons(zone_polygon, response_polygon, agency_id, response_time)
     # Rename the geometry column appropriately
     zone_as_gdf.columns = ['geometry']
 
-
     response_series = gpd.GeoSeries(response_polygon, crs=3395)
     response_as_gdf = gpd.GeoDataFrame([response_series])
     # Rename the geometry column appropriately
     response_as_gdf.columns = ['geometry']
-    
-    # check types
-    # print("zone")
-    # print(type(zone_as_gdf))
-    # print(zone_as_gdf.crs)
-    # print(zone_as_gdf.head())
-    # print("response polygon")
-    # print(type(response_as_gdf))
-    # print(response_as_gdf.crs)
-    # print(response_as_gdf.head())
     
     # Perform the intersection
     join = gpd.overlay(response_as_gdf, zone_as_gdf, how="intersection")
@@ -52,7 +40,6 @@ def intersect_polygons(zone_polygon, response_polygon, agency_id, response_time)
     # Return the dataframe containing the cookie-cutter response polygon
     join.to_crs(crs=3395)
     join.to_crs("EPSG:4326")
-    #print(join)
     return join
 
 
@@ -66,8 +53,12 @@ if __name__ == "__main__":
     # Dissolve the ESN polygons into the wider FIRE_AgencyId zones
     zone_polygons = zone_polygons.dissolve(by = "FIRE_AgencyId").reset_index()
 
+    # Output the ESN polygons to a geoJson, to be displayed on the website
+    zone_polygons.to_file("data/dissolved_zones.geojson", driver = "GeoJSON")
+
+    # Select response time to be used for the network analysis (values in seconds)
     response_times = [120, 300, 600, 1200]
-    response_polygons = []
+    response_polygons = [] # initialize array
 
     # Read in each of the response time geojson files 
     #HERE is a place that we would need to update for automation!
