@@ -16,6 +16,9 @@ ox.config(log_console=False,
             use_cache=True,
             bidirectional_network_types=['drive_service'])
 
+# Response time bins to use for the network analysis (values in seconds)
+RESPONSE_TIMES = [120, 300, 600, 1200]
+
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
 def make_graph(bounding_zone):
 
@@ -114,9 +117,6 @@ if __name__ == "__main__":
     
     # Project the station nodes to the same CRS as that of the Graph
     stations = ox.projection.project_gdf(stations, to_crs=G.graph['crs'], to_latlong=False)
-
-    # Response time in seconds
-    response_times = [120, 300, 600, 1200]
 
     # List of dataframes for each response time
     gdf_list = []

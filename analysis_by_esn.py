@@ -11,6 +11,7 @@ import geopandas as gpd
 from shapely.geometry import Point, MultiPoint
 import alphashape
 from tqdm import tqdm
+from network_analysis import RESPONSE_TIMES
 
 ox.config(log_console=False,
             use_cache=True,
@@ -55,32 +56,26 @@ if __name__ == "__main__":
 
     # Output the ESN polygons to a geoJson, to be displayed on the website
     zone_polygons.to_file("data/dissolved_zones.geojson", driver = "GeoJSON")
-
-    # Select response time to be used for the network analysis (values in seconds)
-    response_times = [120, 300, 600, 1200]
-    response_polygons = [] # initialize array
+    
+    # initialize array to hold state-bounded-polygon geojson files
+    response_polygons = []
 
     # Read in each of the response time geojson files 
-    #HERE is a place that we would need to update for automation!
-    response_2min = gpd.read_file("data/2.geojson")
-    response_polygons.append(response_2min)
-    response_5min = gpd.read_file("data/5.geojson")
-    response_polygons.append(response_5min)
-    response_10min = gpd.read_file("data/10.geojson")
-    response_polygons.append(response_10min)
-    response_20min = gpd.read_file("data/20.geojson")
-    response_polygons.append(response_20min)
+    for time in RESPONSE_TIMES: # use the response time values in network_analysis.py
+        response_time_gdf = gpd.read_file("data/%d.geojson" % (time / 60))
+        response_polygons.append(response_time_gdf)
     
-    # Initialize list that will hold outputted dataframes
+    # Initialize list that will hold the outputted dataframes with ESN polygons
     gdf_list = []
+
     # Initialize as many GeoDataFrames as there are response time bins
     # Store these new GeoDataFrames in the gdf_list array.
-    for i in range(len(response_times)):
+    for i in range(len(RESPONSE_TIMES)):
         gdf_list.append(gpd.GeoDataFrame())
 
     invalid_zone_polygons = []
 
-    # Iterate over the response_geojson list of dataframes 
+    # Iterate over the response_geojson dataframes 
     for i in range(len(response_polygons)):
         response_dataframe = response_polygons[i]
         # Iterate over polygons in the dataframe
@@ -109,12 +104,12 @@ if __name__ == "__main__":
                 # Filter through rows in station_gdf by response_time and append to corresponding GeoDataFrame()
                 for j in range(len(response_polygons)):
                     row = bounded_response_poly.loc[
-                        (bounded_response_poly['response_time'] == response_times[j]), 
+                        (bounded_response_poly['response_time'] == RESPONSE_TIMES[j]), 
                         ['response_time', 'FIRE_AgencyId', 'geometry']
                     ]
                     gdf_list[j] = gdf_list[j].append(row)
 
     # Convert each of the response time GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
-        response_min = int(response_times[i]/60)
+        response_min = int(RESPONSE_TIMES[i]/60)
         gdf_list[i].to_file("data/%s_esn.geojson" % str(response_min), driver="GeoJSON")
