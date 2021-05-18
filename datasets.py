@@ -24,6 +24,7 @@ def request_API_data():
             json.dump(hydrant_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve hydrant data")
+        exit(1) # Exit to warn maintainers of an error related to the API
 
     # make the request for E-911 service zone data from VT Geoportal
     r = requests.get('https://opendata.arcgis.com/datasets/777ccbd85d8f4047906e37b0d16bf1e1_28.geojson')
@@ -35,6 +36,7 @@ def request_API_data():
             json.dump(zone_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve service zone data")
+        exit(1) # Exit to warn maintainers of an error related to the API
 
     # make the request for E-911 structure data from VT Geoportal
     r = requests.get('https://opendata.arcgis.com/datasets/7a393abbbaa941449630361d9fd153c4_29.geojson')
@@ -46,6 +48,7 @@ def request_API_data():
             json.dump(structures_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve structure data")
+        exit(1) # Exit to warn maintainers of an error related to the API
 
     # make the request for state of Vermont polygon from VT Geoportal
     r = requests.get('https://opendata.arcgis.com/datasets/ad7e257457364c71a050f9291eafc806_31.geojson')
@@ -57,3 +60,4 @@ def request_API_data():
             json.dump(vermont_state_data, jsonFile)
     else:
         print("An error occurred while trying to retrieve Vermont state data")
+        exit(1) # Exit to warn maintainers of an error related to the API
