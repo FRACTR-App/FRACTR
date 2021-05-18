@@ -2,17 +2,13 @@ import os
 import requests
 import json
 
-API_HYDRANTS_PATH = "hydrants.json"
-API_ZONES_PATH = "zones.json"
-API_STRUCTURES_PATH = "structures.json"
-API_VERMONT_PATH = "vermont.json"
+API_HYDRANTS_PATH = "data/hydrants.json"
+API_ZONES_PATH = "data/zones.json"
+API_STRUCTURES_PATH = "data/structures.json"
+API_VERMONT_PATH = "data/vermont.json"
 
 # Downloads data as JSON files from the Vermont Geoportal REST API
 def request_API_data():
-
-    # Make sure the data folder exists (where all json / geojsons are output)
-    if not os.path.exists('data'):
-        os.makedirs('data')
 
     # Make the request for E-911 hydrant data from VT Geoportal
     r = requests.get('https://opendata.arcgis.com/datasets/8429ff7bc1ba4abeb37d6c8ae49c8a8c_26.geojson')
