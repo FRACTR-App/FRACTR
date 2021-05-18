@@ -66,4 +66,5 @@ jobs:
         destination_repo: 'This-blank-Is-On-Fire/This-blank-Is-On-Fire.github.io'
         user_email: 'jcambefort@middlebury.edu'
         user_name: 'johncambefort'
+        destination_branch: 'master'
         # commit_message: See ORIGIN_COMMIT from $GITHUB_REF
