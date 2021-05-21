@@ -1,15 +1,28 @@
-from os import EX_SOFTWARE
+"""
+Hydrant_analysis.py takes as input the hydrant_coords.geojson file,
+sorts the hydrants based on flowrate (gallons per minute), 
+and outputs the following geojson files:
+- hydrant_unknown.geojson (hydrants with unknown flow rate)
+- hydrant_red.geojson (less than 500 gpm)
+- hydrant_orange.geojson (between 500 and 1000 gpm)
+- hydrant_green.geojson (between 1000 and 1500 gpm)
+- hydrant_blue.geojson (more than 1500 gpm)
+
+These files contain geometric circles drawn around every hydrant. The circle radius
+is 600 feet (183 meters), as this is the average maximum distance from which a fire engine 
+can source water from the fire hydrant.
+
+Authors: Halcyon Brown & John Cambefort
+"""
+
 import osmnx as ox
-import networkx as nx
 import geopandas as gpd
-from shapely.geometry import Point, Polygon, shape
 from tqdm import tqdm
 
 ox.config(log_console=False, use_cache=True)
 
-WEB_DIR = ""
-
-# Returns a circular buffer (in meters) around a hydrant given the hydrant coordinates and the radius of the buffer
+# Returns a circular buffer (in meters) around a hydrant given the hydrant coordinates 
+# and the radius of the buffer
 def make_buffer(hydrant, radius):
     # Create the buffer
     buffer = hydrant.buffer(radius)
@@ -59,8 +72,10 @@ if __name__ == "__main__":
     for i in tqdm(range(len(hydrants))):
         # Obtain the hydrant coordinates
         hydrant_of_interest = hydrants['geometry'].loc[i]
+
         # Obtain the flowrate
         flow_rate = hydrants['FLOWRATE'].loc[i]
+
         # Figure out what hydrant type the flow_rate corresponds to
         hydrant_type = ""
         if (flow_rate == None):
@@ -81,18 +96,8 @@ if __name__ == "__main__":
         buffer.columns = ['geometry']
         # Add a flowrate column to buffer dataframe
         buffer["FLOWRATE"] = hydrant_type
-        print(buffer)
         # Add the buffer to the dataframe for all hydrant buffers
         hydrant_polys_gdf = hydrant_polys_gdf.append(buffer)
-        #print(hydrant_polys_gdf)
-    
-    
-    # Filter through rows in hydrant_polys_gdf by flow_rate and append to corresponding GeoDataFrame()
-    #flow_rate_list is list of strings of hydrant types ['blue', 'green', 'orange', 'red', 'unknown']
-    #hydrant_polys_gdf is dataframe containing all polygons 
-    #gdf_list is list of dataframes, one for each of the hydrant types
-    #we need to place each hydrant polygon dataframe in proper gdf_list dataframe based on hydrant type
-
 
     for j in range(len(flow_rate_list)):
         row = hydrant_polys_gdf.loc[
@@ -104,11 +109,8 @@ if __name__ == "__main__":
     # Convert each of the flow rate GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
         flow = flow_rate_list[i]
-        #check to see if any dataframes are empty and if so, do not export them to geojson
+        # Check to see if any dataframes are empty and if so, do not export them to geojson
         if (gdf_list[i]).empty:
             continue
         else:
             gdf_list[i].to_file("data/%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
-    
-    # Make the dataframe into a geojson file
-    #hydrant_polys_gdf.to_file("data/%s.geojson" % (WEB_DIR + "hydrant_polys"), driver="GeoJSON")

@@ -1,15 +1,26 @@
 """
-Creating the response time networks
+Analysis_by_esn.py is similar to network_analysis.py. However, it differs in that the
+polygons produced (in the outputted geoJson files) are bounded by the Fire Department
+Emergency Service Zones. It produces these by intersecting the polygons produced by
+network_analysis.py with the Fire Dept. Emergency Service Zones polygons.
+The geometries of these zones is collected from the VT Open Geodata Portal:
+https://geodata.vermont.gov/datasets/vt-data-e911-emergency-service-zones
+
+In total, the following files are output by this script:
+- 2_esn.geojson (i.e., contains the 2 minute response time polygons bounded by the zone)
+- 5_esn.geojson
+- 10_esn.geojson
+- 20_esn.geojson
+- esn_zones.geojson –> contains the Emergency Service Zones polygons, to be displayed on the website.
+
 Based on code from https://towardsdatascience.com/how-to-calculate-travel-time-for-any-location-in-the-world-56ce639511f
 and https://github.com/gboeing/osmnx-examples/blob/7cb65dbd64b5923a6013a94b72585f27d7a0acfa/notebooks/13-isolines-isochrones.ipynb
+
+Authors: Halcyon Brown & John Cambefort
 """
 
-import os
 import osmnx as ox
-import networkx as nx
 import geopandas as gpd
-from shapely.geometry import Point, MultiPoint
-import alphashape
 from tqdm import tqdm
 from network_analysis import RESPONSE_TIMES
 
@@ -55,7 +66,7 @@ if __name__ == "__main__":
     zone_polygons = zone_polygons.dissolve(by = "FIRE_AgencyId").reset_index()
 
     # Output the ESN polygons to a geoJson, to be displayed on the website
-    zone_polygons.to_file("data/dissolved_zones.geojson", driver = "GeoJSON")
+    zone_polygons.to_file("data/esn_zones.geojson", driver = "GeoJSON")
     
     # initialize array to hold state-bounded-polygon geojson files
     response_polygons = []

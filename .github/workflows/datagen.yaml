@@ -1,3 +1,8 @@
+# Authors: Halcyon Brown & John Cambefort
+# This workflow file generates the geoJson data files by running the various 
+# python data fetching and network analysis scripts.
+# It then pushes the files to the "data" directory in the project website repository.
+
 name: generate-geojson-files
 on:
   push:

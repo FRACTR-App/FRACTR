@@ -1,3 +1,15 @@
+"""
+Datasets.py attempts to ping the Vermont Open Geodata Portal API once,
+to download the E911 Fire Hydrants, E911 Emergency Service Zones,
+E911 Site Structures (which includes fire stations) and Vermont State geometry
+datasets as .json files.  Each of these datasets includes a geometry column.
+
+These files are ingested by produce_geojson.py which parses and filters the data 
+to preserve only required information (e.g. Fire Department info).
+
+Authors: Halcyon Brown & John Cambefort
+"""
+
 import os
 import requests
 import json

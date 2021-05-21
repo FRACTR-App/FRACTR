@@ -1,14 +1,29 @@
 """
-Creating the response time networks
+Network_analysis.py generates the various response time polygons for every fire station.
+The network analysis performed is only bounded by the state — this model assumes that
+the closest fire station is always the first responder to the call. In practice,
+this is not quite true, as first responders primarily respond to calls that are
+in their Emergency Service Zone (see analysis_by_esn.py).
+
+This module currently outputs the following files:
+- 2.geojson (i.e., contains the 2 minute response time polygons)
+- 5.geojson
+- 10.geojson
+- 20.geojson
+
+It takes as input the data files fetched by datasets.py.
+
 Based on code from https://towardsdatascience.com/how-to-calculate-travel-time-for-any-location-in-the-world-56ce639511f
 and https://github.com/gboeing/osmnx-examples/blob/7cb65dbd64b5923a6013a94b72585f27d7a0acfa/notebooks/13-isolines-isochrones.ipynb
+
+Authors: Halcyon Brown & John Cambefort
 """
 
 import os
 import osmnx as ox
 import networkx as nx
 import geopandas as gpd
-from shapely.geometry import Point, MultiPoint
+from shapely.geometry import Point
 import alphashape
 from tqdm import tqdm
 
@@ -16,7 +31,7 @@ ox.config(log_console=False,
             use_cache=True,
             bidirectional_network_types=['drive_service'])
 
-# Response time bins to use for the network analysis (values in seconds)
+# Response time bins to used for the network analysis (values in seconds)
 RESPONSE_TIMES = [120, 300, 600, 1200]
 
 # Returns a Graph of edges & nodes within the bounding_zone polygon geometry
@@ -121,28 +136,30 @@ if __name__ == "__main__":
     # List of dataframes for each response time
     gdf_list = []
 
-    # We need to add a Fire_AgencyId column to the stations dataset so that our response geojsons can also contain this column
-    # Step 1: create a "FIRE_AgencyId" column in the stations dataset
-    stations["FIRE_AgencyId"] = ""
-
-    # Step 2: For every station (and its ESN), fetch the ESN's FIRE_AgencyId from zones
-    for i in range(len(stations)):
-        station_esn = stations["ESN"].loc[i]
-        station_agency_id = zone_polygons.loc[station_esn == zone_polygons["ESN"], ["FIRE_AgencyId"]].values[0][0]
-        stations.loc[stations.index[i], "FIRE_AgencyId"] = station_agency_id
-
     # Initialize as many GeoDataFrames as there are response time bins
     # Store these new GeoDataFrames in the gdf_list array.
     for i in range(len(RESPONSE_TIMES)):
         gdf_list.append(gpd.GeoDataFrame())
 
-    # iterate over every station
-    for i in tqdm(range(len(stations))): # and fetch all applicable response times
+    # We need to add a Fire_AgencyId column to the fire stations dataset so that 
+    # our response time geojson files can also contain this column.
+    # Step 1: create an empty "FIRE_AgencyId" column in the stations dataset
+    stations["FIRE_AgencyId"] = ""
+
+    # Step 2: For every station, look up the station's ESN and match it to the
+    # FIRE_AgencyId associated with that ESN from the zones_polygon dataset.
+    for i in range(len(stations)):
+        station_esn = stations["ESN"].loc[i]
+        station_agency_id = zone_polygons.loc[station_esn == zone_polygons["ESN"], ["FIRE_AgencyId"]].values[0][0]
+        stations.loc[stations.index[i], "FIRE_AgencyId"] = station_agency_id
+
+    # Iterate over every station
+    for i in tqdm(range(len(stations))):
 
         # Select the station Point object to be passed as a param to compute_subgraphs()
         station_of_interest = stations['geometry'].loc[i]
 
-        #Find the station's Fire Agency ID
+        # Find the station's Fire Agency ID
         agency_id = stations['FIRE_AgencyId'].loc[i]
 
         # Returns a GeoDataFrame with columns "response_time" and "geometry"
