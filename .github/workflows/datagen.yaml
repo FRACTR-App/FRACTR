@@ -7,7 +7,7 @@ name: generate-geojson-files
 on:
   push:
   schedule:
-    - cron: '*/10 * * * *' # trigger at midnight on Sunday (weekly)
+    - cron: '0 0 * * 0' # trigger at midnight on Sunday (weekly)
 
 jobs:
   generate-files:
