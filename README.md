@@ -16,6 +16,13 @@ Currently, a GitHub Actions workflow has been set up to pull the latest data fro
 
 Please use the [GitHub Issues tab](https://github.com/This-blank-Is-On-Fire/FRACTR) to submit any bugs you find or ask questions you may have.
 
+### Ethical Implications of our work
+These maps offer rough estimates of response times and should not be interpreted as exact, reliable fact. Fire station response protocols vary and may impact response times. Differences in fire station resources are not taken into account. 
+Additionally, future homeowners and insurance companies might use our application 
+as a tool to discriminate between properties located near and far away from fire stations. Consequently, future homeowners may be less likely to purchase homes located outside of certain response time zones, and insurance companies could choose to raise insurance costs for homes in these areas. We recognize these possibilities and remind our users that these maps offer estimates and should be used for public governance, citizen awareness, and emergency planning. Our hope is that regional planning commissions and state emergency planners can use these maps to inform their 
+work and increase coverage across the state. If you have any issues with these maps, 
+please reach out to us at jcambefort@middlebury and halcyonb@middlebury.edu, as we would be happy to hear your thoughts. 
+
 ### References
 
 Bellock, K., 2019. Alpha Shape Toolbox. Alpha Shape. URL https://alphashape.readthedocs.io/en/latest/index.html (accessed 5.11.21).
