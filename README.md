@@ -24,6 +24,10 @@ these areas. We recognize these possibilities and remind our users that these ma
 
 If you have any issues with these maps, please reach out to us at [jcambefort@middlebury.edu](mailto:jcambefort@middlebury.edu) and [halcyonb@middlebury.edu](mailto:halcyonb@middlebury.edu), as we would be happy to hear your thoughts.
 
+### Acknowledgments
+
+Thank you to Middlebury Fire Department Chief David Shaw and Andrew L'Roe at the Addison County Regional Planning Commission for their input on local datasets and the Vermont fire service, and for troubleshooting our website. Thank you very much to Bill Hegman, Prof. Holler, Prof. Kimambo, and Kufre Udoh from the Middlebury College Geography Department for their insights into network analysis and working with raster and vector data. Thank you to Prof. Vaccari for overseeing the Computer Science Senior Seminar course and guiding us through this process.
+
 ### Project Report
 
 Please see our website for the link to our full project report and summarizing poster. 
