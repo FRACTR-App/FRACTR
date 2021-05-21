@@ -16,14 +16,26 @@ Currently, a GitHub Actions workflow has been set up to pull the latest data fro
 
 Please use the [GitHub Issues tab](https://github.com/This-blank-Is-On-Fire/FRACTR) to submit any bugs you find or ask questions you may have.
 
-### References
+### Ethical Implications of Our Work
+
+These maps offer rough estimates of response times and should not be interpreted as exact (see the Limitations section).
+A concern of ours is that future homeowners and insurance companies may seek to use our maps as a tool to discriminate between properties located near and far away from fire stations. Consequently, future homeowners may be less likely to purchase homes located outside of certain response time zones, and insurance companies could choose to raise insurance costs for homes in 
+these areas. We recognize these possibilities and remind our users that these maps offer estimates and should be used for public governance, citizen awareness, and emergency planning. Our hope is that regional planning commissions and state emergency planners can use these maps to inform their work and increase coverage across the state.
+
+If you have any issues with these maps, please reach out to us at [jcambefort@middlebury.edu](mailto:jcambefort@middlebury.edu) and [halcyonb@middlebury.edu](mailto:halcyonb@middlebury.edu), as we would be happy to hear your thoughts.
+
+### Project Report
+
+Please see our website for the link to our full project report and summarizing poster.
+
+### Tool References
 
 Bellock, K., 2019. Alpha Shape Toolbox. Alpha Shape. URL https://alphashape.readthedocs.io/en/latest/index.html (accessed 5.11.21).
 
 Boeing, G. 2017. "OSMnx: New Methods for Acquiring, Constructing, Analyzing, and Visualizing Complex Street Networks." Computers, Environment and Urban Systems 65, 126-139. https://doi.org/10.1016/j.compenvurbsys.2017.05.004
 
-Build fast, responsive sites with Bootstrap, n.d. . Bootstrap. URL https://getbootstrap.com/ (accessed 5.11.21).
+Build fast, responsive sites with Bootstrap, n.d. Bootstrap. URL https://getbootstrap.com/ (accessed 5.11.21).
 
 Jordahl, K., 2014. GeoPandas: Python tools for geographic data. URL: https://github.com/geopandas/geopandas.
 
-VT Open Geodata Portal, 2021. . Vermont Official State Website. URL https://geodata.vermont.gov/ (accessed 5.11.21).
+VT Open Geodata Portal, 2021. Vermont Official State Website. URL https://geodata.vermont.gov/ (accessed 5.11.21).
