@@ -26,7 +26,7 @@ If you have any issues with these maps, please reach out to us at [jcambefort@mi
 
 ### Project Report
 
-Please see our website for the link to our full project report and summarizing poster.
+Please see our website for the link to our full project report and summarizing poster. 
 
 ### Tool References
 
