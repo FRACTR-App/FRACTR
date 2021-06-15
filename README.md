@@ -24,6 +24,15 @@ these areas. We recognize these possibilities and remind our users that these ma
 
 If you have any issues with these maps, please reach out to us at [jcambefort@middlebury.edu](mailto:jcambefort@middlebury.edu) and [halcyonb@middlebury.edu](mailto:halcyonb@middlebury.edu), as we would be happy to hear your thoughts.
 
+### Limitations of the Maps & Data
+ - These maps offer rough estimates of response times and should not be interpreted as exact, reliable fact (the road network and speed data are fetched from openstreetmap.org).
+ - Fire station response protocols vary and may impact response times.
+ - Differences in fire station resources are not taken into account.
+ - Any stations missing on the map were either missing in the original dataset, or misleadingly labeled (e.g., labeled strictly as a law enforcement station).
+ - To compute a station's response polygons, a mapping is created between the fire station coordinates and the nearest node on the Open Street Maps network graph.
+However, occasionally, the nearest node on the graph may be a few hundred feet away from the station and thus the polygon produced is slightly off-centered.
+ - For a full list of the project limitations, please see the final report PDF linked on the [project website's homepage](smokenmaps.com).
+
 ### Acknowledgments
 
 Thank you to Middlebury Fire Department Chief David Shaw and Andrew L'Roe at the Addison County Regional Planning Commission for their input on local datasets and the Vermont fire service, and for troubleshooting our website. Thank you very much to Bill Hegman, Prof. Holler, Prof. Kimambo, and Kufre Udoh from the Middlebury College Geography Department for their insights into network analysis and working with raster and vector data. Thank you to Prof. Vaccari for overseeing the Computer Science Senior Seminar course and guiding us through this process.
