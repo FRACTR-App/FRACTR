@@ -55,8 +55,8 @@ def zone_to_geojson(output_file_name, input_file_path):
         "FIRE_DisplayName"] = "WEYBRIDGE"
 
     print("Outputting %s.geojson..." % output_file_name)
-    zone_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
-    #zone_polygons.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
+    #zone_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    zone_polygons.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
 
     return gdf
 
@@ -68,11 +68,28 @@ def stations_to_geojson(output_file_name, input_file_path):
     structure_data = input_file_path
     gdf = gpd.read_file(structure_data)
     
+    # Geodataframe that includes all structures with SITETYPE = FIRE STATION
     station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION"),
-        ["TOWNNAME", "ESN", "geometry"]]
+        ["PRIMARYADDRESS", "TOWNNAME", "ESN", "SITETYPE", "geometry"]]
+    
+    # Geodataframe that includes all missing fire departments that have alternative SITETYPEs
+    missing_station_coords = gpd.GeoDataFrame()
+
+    missing_station_addresses = {"15 FOURTH ST": "LAW ENFORCEMENT", "170 ROCKINGHAM ST": "GOVERNMENT", "5 N PARK PL": "TOWN OFFICE", "2996 VT ROUTE 78": "TOWN OFFICE", "68 TOWN OFFICE RD": "GOVERNMENT",
+        "37 DANE RD": "TOWN OFFICE", "1996 BLACKMER BLVD": "TOWN GARAGE", "350 S MAIN ST": "LAW ENFORCEMENT", "29 UNION ST": "LAW ENFORCEMENT", "48 MAIN ST": "AMBULANCE SERVICE", "1187 MAIN ST": "LAW ENFORCEMENT", 
+        "120 FIRST ST": "LAW ENFORCEMENT", "46 TOWN GARAGE RD": "TOWN GARAGE", "12 ROUTE 215": "GOVERNMENT"}
+    for key in missing_station_addresses:
+        site_type = missing_station_addresses[key]
+        missing_station_gdf = gdf.loc[(gdf["PRIMARYADDRESS"].str.contains(key)) & (gdf["SITETYPE"].str.contains(site_type)),
+        ["PRIMARYADDRESS", "TOWNNAME", "ESN", "SITETYPE", "geometry"]]
+        missing_station_coords = missing_station_coords.append(missing_station_gdf)
+
+    # Append the two dataframes together ie. stations.append(missing)
+    station_coords = station_coords.append(missing_station_coords)
 
     print("Outputting %s.geojson..." % output_file_name)
-    station_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    #station_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    station_coords.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
     return station_coords
 
 
@@ -101,8 +118,8 @@ if __name__ == "__main__":
     request_API_data()
 
     # Create new .geojson files by filtering through JSON data for relevant columns
-    #stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
+    stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
     #vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
-    zone_to_geojson("zone_polygons", API_ZONES_PATH)
+    #zone_to_geojson("zone_polygons", API_ZONES_PATH)
     #hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
     

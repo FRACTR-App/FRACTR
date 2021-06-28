@@ -3,7 +3,6 @@ This file takes in fire_station_coords.geojson and department_types.json. It out
 that contains all the information from fire_station_coords.geojson with the addition of the department type column.
 """
 
-import os
 import pandas as pd
 import geopandas as gpd
 from tqdm import tqdm
@@ -19,10 +18,11 @@ import re
 # 3. Find a match
 # 4. Update Dept Type property to include the department type for the matched station
 
-# Read in station coordinate data
-stations = gpd.read_file("fire_station_coords.geojson")
 # Read in department type data
 dept_types = pd.read_json("department_types.json")
+
+# Read in station coordinate data
+stations = gpd.read_file("fire_station_coords_test.geojson")
 
 # Read in the emergency service zones to be used for subgraphs
 zone_polygons = gpd.read_file("zone_polygons_test.geojson")
@@ -70,7 +70,7 @@ for i in tqdm(range(len(stations))):
         #print(station_type)
         stations.loc[stations.index[i], "Department_Type"] = station_type
 
-stations.to_file("new_stations_test.geojson", driver="GeoJSON")
+stations.to_file("updated_stations_coords.geojson", driver="GeoJSON")
 print("list of unmatched stations: ")
 print(unmatched_list)
 #print(dept_types)
@@ -82,7 +82,6 @@ for i in range(len(dept_types)):
     department = dept_types.iloc[i]
     if (department["Utilized"] == "No"):
         department_name = department["Department_Name"]
-        print(department_name)
         not_utilized_departments.append(department_name)
 print("List of not utilized departments:")
 print(not_utilized_departments)
