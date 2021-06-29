@@ -34,6 +34,8 @@ def hydrants_to_geojson(output_file_name, input_file_path):
     print("Outputting %s.geojson..." % output_file_name)
     hydrant_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
     #hydrant_coords.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
+    return hydrant_coords
+
 
 # Creates a 2-column geojson file containing the emergency service zone polygon coordinates 
 # and ESN number. These polygons include all zones, including police and emergency medical responder 
@@ -55,10 +57,10 @@ def zone_to_geojson(output_file_name, input_file_path):
         "FIRE_DisplayName"] = "WEYBRIDGE"
 
     print("Outputting %s.geojson..." % output_file_name)
-    #zone_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
-    zone_polygons.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
+    zone_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    #zone_polygons.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
 
-    return gdf
+    return zone_polygons
 
 
 # Creates a 1-column geojson file containing fire station coordinates and related information
@@ -88,8 +90,7 @@ def stations_to_geojson(output_file_name, input_file_path):
     station_coords = station_coords.append(missing_station_coords)
 
     print("Outputting %s.geojson..." % output_file_name)
-    #station_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
-    station_coords.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
+    station_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
     return station_coords
 
 
@@ -119,7 +120,7 @@ if __name__ == "__main__":
 
     # Create new .geojson files by filtering through JSON data for relevant columns
     stations_to_geojson("fire_station_coords", API_STRUCTURES_PATH)
-    #vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
-    #zone_to_geojson("zone_polygons", API_ZONES_PATH)
-    #hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
+    vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
+    zone_to_geojson("zone_polygons", API_ZONES_PATH)
+    hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
     
