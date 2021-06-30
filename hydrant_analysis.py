@@ -76,18 +76,37 @@ if __name__ == "__main__":
         # Obtain the flowrate
         flow_rate = hydrants['FLOWRATE'].loc[i]
 
-        # Figure out what hydrant type the flow_rate corresponds to
-        hydrant_type = ""
-        if (flow_rate == None):
-            hydrant_type = 'unknown' 
-        elif (int(flow_rate) >= 1500):
-            hyrant_type = 'blue'
+        # Obtain the hydrant type (coded as H1, H2, H3, H4)
+        coded_type = hydrants['HYDRANTTYPE'].loc[i]
+
+        # Figure out what hydrant color the flow_rate corresponds to
+        hydrant_color = ""
+        # if (flow_rate == None):
+        #     hydrant_color = 'unknown' 
+        if (int(flow_rate) >= 1500):
+            hyrant_color = 'blue'
         elif (int(flow_rate) >= 1000 and int(flow_rate) < 1500):
-            hydrant_type = 'green'
+            hydrant_color = 'green'
         elif (int(flow_rate) >= 500 and int(flow_rate) < 1000):
-            hydrant_type = 'orange'
+            hydrant_color = 'orange'
+        elif (int(flow_rate) < 500):
+            hydrant_color = 'red'
         else:
-            hydrant_type = 'red'
+            hydrant_color = 'unknown'
+
+
+        # Figure out what hydrant type the hydrant corresponds to based on HYDRANTTYPE
+        hydrant_type = ""
+        if (coded_type == "H1"):
+            hydrant_type = "Municipal Hydrant"
+        elif (coded_type == "H2"):
+            hydrant_type = "Dry Hydrant"
+        elif (coded_type == "H3"):
+            hydrant_type = "Pressurized Hydrant"
+        elif (coded_type == "H4"):
+            hydrant_type = "Drafting Site"
+        else:
+            hydrant_type = "Unknown Hydrant Type"
       
         # The buffer is initialized as 183 meters (600ft) - 305 meters = 1000ft
         buffer = make_buffer(hydrant_of_interest, 183)
@@ -95,7 +114,9 @@ if __name__ == "__main__":
         # Rename the geometry column
         buffer.columns = ['geometry']
         # Add a flowrate column to buffer dataframe
-        buffer["FLOWRATE"] = hydrant_type
+        buffer["FLOWRATE"] = hydrant_color
+        # Add a hydrant type column to the buffer dataframe 
+        buffer["HYDRANTTYPE"] = hydrant_type
         # Add the buffer to the dataframe for all hydrant buffers
         hydrant_polys_gdf = hydrant_polys_gdf.append(buffer)
 
