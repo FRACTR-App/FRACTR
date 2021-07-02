@@ -40,6 +40,15 @@ def make_buffer(hydrant, radius):
 
 if __name__ == "__main__":
 
+    # Read in the five hydrant coordinate datasets outputted by hydrant_coords_by_type.py
+    # file_paths = ["data/Dry_Hydrant_coords.geojson", "data/Drafting_Site_coords.geojson", 
+    #         "data/Municipal_Hydrant_coords.geojson", "data/Pressurized_Hydrant_coords.geojson", 
+    #         "data/Unknown_Type_coords.geojson"]
+    # hydrants = gpd.GeoDataFrame()
+    # for i in range(len(file_paths)):
+    #     hydrant_file = gpd.read_file(file_paths[i])
+    #     hydrants.append(hydrant_file)
+
     # Read in hydrant coordinate data
     hydrants = gpd.read_file("data/hydrant_coords.geojson")
     
@@ -78,12 +87,13 @@ if __name__ == "__main__":
 
         # Obtain the hydrant type (coded as H1, H2, H3, H4)
         coded_type = hydrants['HYDRANTTYPE'].loc[i]
+        #print(coded_type)
 
         # Figure out what hydrant color the flow_rate corresponds to
         hydrant_color = ""
-        # if (flow_rate == None):
-        #     hydrant_color = 'unknown' 
-        if (int(flow_rate) >= 1500):
+        if (flow_rate == None):
+            hydrant_color = 'unknown' 
+        elif (int(flow_rate) >= 1500):
             hyrant_color = 'blue'
         elif (int(flow_rate) >= 1000 and int(flow_rate) < 1500):
             hydrant_color = 'green'
@@ -106,7 +116,7 @@ if __name__ == "__main__":
         elif (coded_type == "H4"):
             hydrant_type = "Drafting Site"
         else:
-            hydrant_type = "Unknown Hydrant Type"
+            hydrant_type = "Unknown Type"
       
         # The buffer is initialized as 183 meters (600ft) - 305 meters = 1000ft
         buffer = make_buffer(hydrant_of_interest, 183)
@@ -117,13 +127,14 @@ if __name__ == "__main__":
         buffer["FLOWRATE"] = hydrant_color
         # Add a hydrant type column to the buffer dataframe 
         buffer["HYDRANTTYPE"] = hydrant_type
+        #print(buffer["HYDRANTTYPE"])
         # Add the buffer to the dataframe for all hydrant buffers
         hydrant_polys_gdf = hydrant_polys_gdf.append(buffer)
 
     for j in range(len(flow_rate_list)):
         row = hydrant_polys_gdf.loc[
             (hydrant_polys_gdf['FLOWRATE'] == flow_rate_list[j]), 
-            ['FLOWRATE', 'geometry']
+            ['FLOWRATE', 'HYDRANTTYPE', 'geometry']
         ]
         gdf_list[j] = gdf_list[j].append(row)
 
