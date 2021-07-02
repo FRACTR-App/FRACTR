@@ -19,8 +19,8 @@ import geopandas as gpd
 from tqdm import tqdm
 
 # Read in hydrant coordinate data
-#hydrants = gpd.read_file("data/hydrant_coords.geojson")
-hydrants = gpd.read_file("hydrant_coords_test.geojson")
+hydrants = gpd.read_file("data/hydrant_coords.geojson")
+#hydrants = gpd.read_file("hydrant_coords_test.geojson")
 #hydrants = hydrants.head(100)
 
 # Figure out the different hydrant flow rate categories
@@ -118,5 +118,5 @@ for i in range(len(gdf_list)):
     else:
         print("outputting %s geojson file" % (hyd_type))
         #print(gdf_list[i])
-        #gdf_list[i].to_file("data/%s.geojson" % ("coords_" + str(hyd_type)), driver="GeoJSON")
-        gdf_list[i].to_file("%s_coords.geojson" % (str(hyd_type)), driver="GeoJSON")
+        gdf_list[i].to_file("data/%s_coords.geojson" % (str(hyd_type)), driver="GeoJSON")
+        #gdf_list[i].to_file("%s_coords.geojson" % (str(hyd_type)), driver="GeoJSON")

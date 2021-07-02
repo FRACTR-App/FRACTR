@@ -17,6 +17,7 @@ Authors: Halcyon Brown & John Cambefort
 
 import osmnx as ox
 import geopandas as gpd
+import pandas as pd
 from tqdm import tqdm
 
 ox.config(log_console=False, use_cache=True)
@@ -41,30 +42,26 @@ def make_buffer(hydrant, radius):
 if __name__ == "__main__":
 
     # Read in the five hydrant coordinate datasets outputted by hydrant_coords_by_type.py
-    # file_paths = ["data/Dry_Hydrant_coords.geojson", "data/Drafting_Site_coords.geojson", 
-    #         "data/Municipal_Hydrant_coords.geojson", "data/Pressurized_Hydrant_coords.geojson", 
-    #         "data/Unknown_Type_coords.geojson"]
-    # hydrants = gpd.GeoDataFrame()
-    # for i in range(len(file_paths)):
-    #     hydrant_file = gpd.read_file(file_paths[i])
-    #     hydrants.append(hydrant_file)
+    file_paths = ["data/Dry_Hydrant_coords.geojson", "data/Drafting_Site_coords.geojson", 
+            "data/Municipal_Hydrant_coords.geojson", "data/Pressurized_Hydrant_coords.geojson", 
+            "data/Unknown_Type_coords.geojson"]
+    # file_paths = ["Dry_Hydrant_coords.geojson", "Drafting_Site_coords.geojson", 
+    #         "Municipal_Hydrant_coords.geojson", "Pressurized_Hydrant_coords.geojson", 
+    #         "Unknown_Type_coords.geojson"]
+    dataframesList = []
+    for i in range(len(file_paths)):
+        hydrant_file = gpd.read_file(file_paths[i])
+        dataframesList.append(hydrant_file)
+    hydrants = gpd.GeoDataFrame(pd.concat(dataframesList, ignore_index=True), crs=dataframesList[0].crs)
 
     # Read in hydrant coordinate data
-    hydrants = gpd.read_file("data/hydrant_coords.geojson")
+    # hydrants = gpd.read_file("data/hydrant_coords.geojson")
     
     # Project the hydrant coordinates to Mercator
     hydrants = hydrants.to_crs(epsg=3395)
 
     # Initialize the dataframe that will hold all of the hydrant polygons
     hydrant_polys_gdf = gpd.GeoDataFrame()
-
-    # Figure out the different hydrant flow rate categories
-    for i in range(len(hydrants)):
-        flow_rate = hydrants['FLOWRATE'].loc[i]
-        if flow_rate is not None:
-            edited_rate = flow_rate.split("g")[0]
-            hydrants['FLOWRATE'].loc[i] = int(edited_rate)
-        flow = hydrants['FLOWRATE'].loc[i]
 
     # Make a list containing the different hydrant colors based on flow rate (NFPA)
     flow_rate_list = ['blue', 'green', 'orange', 'red', 'unknown']
@@ -83,41 +80,11 @@ if __name__ == "__main__":
         hydrant_of_interest = hydrants['geometry'].loc[i]
 
         # Obtain the flowrate
-        flow_rate = hydrants['FLOWRATE'].loc[i]
+        hydrant_color = hydrants['FLOWRATE'].loc[i]
 
-        # Obtain the hydrant type (coded as H1, H2, H3, H4)
-        coded_type = hydrants['HYDRANTTYPE'].loc[i]
-        #print(coded_type)
+        # Obtain the hydrant type
+        hydrant_type = hydrants['HYDRANTTYPE'].loc[i]
 
-        # Figure out what hydrant color the flow_rate corresponds to
-        hydrant_color = ""
-        if (flow_rate == None):
-            hydrant_color = 'unknown' 
-        elif (int(flow_rate) >= 1500):
-            hyrant_color = 'blue'
-        elif (int(flow_rate) >= 1000 and int(flow_rate) < 1500):
-            hydrant_color = 'green'
-        elif (int(flow_rate) >= 500 and int(flow_rate) < 1000):
-            hydrant_color = 'orange'
-        elif (int(flow_rate) < 500):
-            hydrant_color = 'red'
-        else:
-            hydrant_color = 'unknown'
-
-
-        # Figure out what hydrant type the hydrant corresponds to based on HYDRANTTYPE
-        hydrant_type = ""
-        if (coded_type == "H1"):
-            hydrant_type = "Municipal Hydrant"
-        elif (coded_type == "H2"):
-            hydrant_type = "Dry Hydrant"
-        elif (coded_type == "H3"):
-            hydrant_type = "Pressurized Hydrant"
-        elif (coded_type == "H4"):
-            hydrant_type = "Drafting Site"
-        else:
-            hydrant_type = "Unknown Type"
-      
         # The buffer is initialized as 183 meters (600ft) - 305 meters = 1000ft
         buffer = make_buffer(hydrant_of_interest, 183)
 
@@ -146,3 +113,4 @@ if __name__ == "__main__":
             continue
         else:
             gdf_list[i].to_file("data/%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
+            #gdf_list[i].to_file("%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
