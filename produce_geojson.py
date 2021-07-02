@@ -21,10 +21,10 @@ Authors: Halcyon Brown & John Cambefort
 
 import os
 import geopandas as gpd
-from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, API_VERMONT_PATH, request_API_data
+from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, API_VERMONT_PATH, API_SURFACE_WATER_PATH, API_FOOTPRINTS_PATH, request_API_data
 
-# Creates a 1-column geojson file containing fire hydrant coordinates
-# from a json file collected from the Vermont Geoportal API
+# Creates a 5-column geojson file containing fire hydrant coordinates, county, hydrant ID, 
+# hydrant type and flow rate from a json file collected from the Vermont Geoportal API
 # Returns the GeoDataFrame (used to generate the output .geojson file)
 def hydrants_to_geojson(output_file_name, input_file_path):
     hydrant_path = input_file_path
@@ -34,8 +34,8 @@ def hydrants_to_geojson(output_file_name, input_file_path):
     print("Outputting %s.geojson..." % output_file_name)
     hydrant_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
 
-# Creates a 2-column geojson file containing the emergency service zone polygon coordinates 
-# and ESN number. These polygons include all zones, including police and emergency medical responder 
+# Creates a 3-column geojson file containing the emergency service zone polygon coordinates 
+# and ESN number and Fire Agency ID. These polygons include all zones, including police and emergency medical responder 
 # zones. In analysis_by_esn.py, the Fire Department zones are extracted from this dataset
 # and written to the esn_zones.py file.
 # Returns the GeoDataFrame (used to generate the output .geojson file)
@@ -57,7 +57,7 @@ def zone_to_geojson(output_file_name, input_file_path):
     return gdf
 
 
-# Creates a 1-column geojson file containing fire station coordinates and related information
+# Creates a 3-column geojson file containing fire station coordinates, town name, and ESN
 # from a json file collected from the Vermont Geoportal API
 # Returns the GeoDataFrame (used to generate the output .geojson file)
 def stations_to_geojson(output_file_name, input_file_path):
@@ -84,6 +84,29 @@ def vermont_to_geojson(output_file_name, input_file_path):
     vermont_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
     return vermont_coords
 
+# Creates a 2-column geojson file containing surface water polygons
+# from a json file collected from the Vermont Geoportal API.
+# Returns the GeoDataFrame (used to generate the output .geojson file)
+def surface_water_to_geojson(output_file_name, input_file_path):
+    surface_water_data = input_file_path
+    gdf = gpd.read_file(surface_water_data)
+    surface_water_polygons = gdf[['FTYPE', 'geometry']]
+    
+    print("Outputting %s.geojson..." % output_file_name)
+    surface_water_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    return surface_water_polygons
+
+# Creates a 2-column geojson file containing surface water polygons
+# from a json file collected from the Vermont Geoportal API.
+# Returns the GeoDataFrame (used to generate the output .geojson file)
+def footprints_to_geojson(output_file_name, input_file_path):
+    footprints_data = input_file_path
+    gdf = gpd.read_file(footprints_data)
+    footprint_polygons = gdf[['FOOTPRINTTYPE', 'NAME', 'PRIMARYADDRESS', 'TOWNNAME', 'geometry']]
+    
+    print("Outputting %s.geojson..." % output_file_name)
+    footprint_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    return footprint_polygons
 
 ########################################
 
@@ -101,4 +124,5 @@ if __name__ == "__main__":
     vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
     zone_to_geojson("zone_polygons", API_ZONES_PATH)
     hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
-    
+    surface_water_to_geojson("surface_water_polygons", API_SURFACE_WATER_PATH)
+    footprints_to_geojson("footprint_polygons", API_FOOTPRINTS_PATH)
