@@ -111,7 +111,7 @@ def compute_subgraphs(G, response_times, station, agency_id):
 if __name__ == "__main__":
     
     # Read in station coordinate data
-    stations = gpd.read_file("data/fire_station_coords.geojson")
+    stations = gpd.read_file("data/updated_stations_coords.geojson")
     
     # Read in the bounding zone to be used for the graph
     bounding_zone = gpd.read_file("data/vermont_state_polygon.geojson")["geometry"].loc[0]

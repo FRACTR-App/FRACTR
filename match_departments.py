@@ -19,13 +19,13 @@ import re
 # 4. Update Dept Type property to include the department type for the matched station
 
 # Read in department type data
-dept_types = pd.read_json("department_types.json")
+dept_types = pd.read_json("data/department_types.json")
 
 # Read in station coordinate data
-stations = gpd.read_file("fire_station_coords_test.geojson")
+stations = gpd.read_file("data/fire_station_coords.geojson")
 
 # Read in the emergency service zones to be used for subgraphs
-zone_polygons = gpd.read_file("zone_polygons_test.geojson")
+zone_polygons = gpd.read_file("data/zone_polygons.geojson")
 
 # We need to add a Fire_AgencyId column to the fire stations dataset so that 
 # our response time geojson files can also contain this column.
@@ -70,7 +70,7 @@ for i in tqdm(range(len(stations))):
         #print(station_type)
         stations.loc[stations.index[i], "Department_Type"] = station_type
 
-stations.to_file("updated_stations_coords.geojson", driver="GeoJSON")
+stations.to_file("data/updated_stations_coords.geojson", driver="GeoJSON")
 print("list of unmatched stations: ")
 print(unmatched_list)
 #print(dept_types)

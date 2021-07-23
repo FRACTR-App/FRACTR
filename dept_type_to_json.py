@@ -25,5 +25,5 @@ def csv_to_json(csvFilePath, jsonFilePath):
         jsonf.write(jsonString)
           
 csvFilePath = r'department_types.csv'
-jsonFilePath = r'department_types.json'
+jsonFilePath = r'data/department_types.json'
 csv_to_json(csvFilePath, jsonFilePath)
