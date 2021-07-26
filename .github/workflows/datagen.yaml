@@ -2,6 +2,7 @@
 # This workflow file generates the geoJson data files by running the various 
 # python data fetching and network analysis scripts.
 # It then pushes the files to the "data" directory in the project website repository.
+# It is triggered weekly at midnight on Sundays and when there are new pushes to the repositories.
 
 name: generate-geojson-files
 on:
