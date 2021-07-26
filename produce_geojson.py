@@ -21,7 +21,7 @@ Authors: Halcyon Brown & John Cambefort
 
 import os
 import geopandas as gpd
-from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, API_VERMONT_PATH, API_SURFACE_WATER_PATH, API_FOOTPRINTS_PATH, request_API_data
+from datasets import API_HYDRANTS_PATH, API_ZONES_PATH, API_STRUCTURES_PATH, API_VERMONT_PATH, request_API_data
 
 # Creates a 5-column geojson file containing fire hydrant coordinates, county, hydrant ID, 
 # hydrant type and flow rate from a json file collected from the Vermont Geoportal API
