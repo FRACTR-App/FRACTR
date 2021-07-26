@@ -103,7 +103,7 @@ for i in tqdm(range(len(hydrants))):
 for j in range(len(hydrant_type_list)):
     row = hydrants.loc[
         (hydrants['HYDRANTTYPE'] == hydrant_type_list[j]), 
-        ['FLOWRATE', 'HYDRANTTYPE', 'geometry']
+        ['HYDRANTID','FLOWRATE', 'HYDRANTTYPE', 'geometry']
     ]
     gdf_list[j] = gdf_list[j].append(row)
 

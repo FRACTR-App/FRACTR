@@ -84,29 +84,29 @@ def vermont_to_geojson(output_file_name, input_file_path):
     vermont_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
     return vermont_coords
 
-# Creates a 2-column geojson file containing surface water polygons
-# from a json file collected from the Vermont Geoportal API.
-# Returns the GeoDataFrame (used to generate the output .geojson file)
-def surface_water_to_geojson(output_file_name, input_file_path):
-    surface_water_data = input_file_path
-    gdf = gpd.read_file(surface_water_data)
-    surface_water_polygons = gdf[['FTYPE', 'geometry']]
+# # Creates a 2-column geojson file containing surface water polygons
+# # from a json file collected from the Vermont Geoportal API.
+# # Returns the GeoDataFrame (used to generate the output .geojson file)
+# def surface_water_to_geojson(output_file_name, input_file_path):
+#     surface_water_data = input_file_path
+#     gdf = gpd.read_file(surface_water_data)
+#     surface_water_polygons = gdf[['FTYPE', 'geometry']]
     
-    print("Outputting %s.geojson..." % output_file_name)
-    surface_water_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
-    return surface_water_polygons
+#     print("Outputting %s.geojson..." % output_file_name)
+#     surface_water_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+#     return surface_water_polygons
 
-# Creates a 2-column geojson file containing surface water polygons
-# from a json file collected from the Vermont Geoportal API.
-# Returns the GeoDataFrame (used to generate the output .geojson file)
-def footprints_to_geojson(output_file_name, input_file_path):
-    footprints_data = input_file_path
-    gdf = gpd.read_file(footprints_data)
-    footprint_polygons = gdf[['FOOTPRINTTYPE', 'NAME', 'PRIMARYADDRESS', 'TOWNNAME', 'geometry']]
+# # Creates a 2-column geojson file containing surface water polygons
+# # from a json file collected from the Vermont Geoportal API.
+# # Returns the GeoDataFrame (used to generate the output .geojson file)
+# def footprints_to_geojson(output_file_name, input_file_path):
+#     footprints_data = input_file_path
+#     gdf = gpd.read_file(footprints_data)
+#     footprint_polygons = gdf[['FOOTPRINTTYPE', 'NAME', 'PRIMARYADDRESS', 'TOWNNAME', 'geometry']]
     
-    print("Outputting %s.geojson..." % output_file_name)
-    footprint_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
-    return footprint_polygons
+#     print("Outputting %s.geojson..." % output_file_name)
+#     footprint_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+#     return footprint_polygons
 
 ########################################
 
@@ -124,5 +124,5 @@ if __name__ == "__main__":
     vermont_to_geojson("vermont_state_polygon", API_VERMONT_PATH)
     zone_to_geojson("zone_polygons", API_ZONES_PATH)
     hydrants_to_geojson("hydrant_coords", API_HYDRANTS_PATH)
-    surface_water_to_geojson("surface_water_polygons", API_SURFACE_WATER_PATH)
-    footprints_to_geojson("footprint_polygons", API_FOOTPRINTS_PATH)
+    # surface_water_to_geojson("surface_water_polygons", API_SURFACE_WATER_PATH)
+    # footprints_to_geojson("footprint_polygons", API_FOOTPRINTS_PATH)

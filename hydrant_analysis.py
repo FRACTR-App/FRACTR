@@ -54,6 +54,7 @@ if __name__ == "__main__":
         dataframesList.append(hydrant_file)
     hydrants = gpd.GeoDataFrame(pd.concat(dataframesList, ignore_index=True), crs=dataframesList[0].crs)
 
+    hydrants = hydrants.head(50)
     # Read in hydrant coordinate data
     # hydrants = gpd.read_file("data/hydrant_coords.geojson")
     
@@ -66,12 +67,15 @@ if __name__ == "__main__":
     # Make a list containing the different hydrant colors based on flow rate (NFPA)
     flow_rate_list = ['blue', 'green', 'orange', 'red', 'unknown']
 
-    # List of dataframes for each flow rate
+    # Make a list containing the different hydrant types 
+    hydrant_type_list = ['Dry Hydrant', 'Drafting Site', 'Municipal Hydrant', 'Pressurized Hydrant', 'Unknown Type']
+
+    # List of dataframes for each hydrant type
     gdf_list = []
  
-    # Initialize as many GeoDataFrames as there are flow rate bins
+    # Initialize as many GeoDataFrames as there are hydrant type bins
     # Store these new GeoDataFrames in the gdf_list array.
-    for i in range(len(flow_rate_list)):
+    for i in range(len(hydrant_type_list)):
         gdf_list.append(gpd.GeoDataFrame())
 
     # Iterate through all of the hydants, creating the buffer polygons and add them to dataframe
@@ -85,6 +89,9 @@ if __name__ == "__main__":
         # Obtain the hydrant type
         hydrant_type = hydrants['HYDRANTTYPE'].loc[i]
 
+        # Obtain the hydrant id
+        hydrant_id = hydrants['HYDRANTID'].loc[i]
+
         # The buffer is initialized as 183 meters (600ft) - 305 meters = 1000ft
         buffer = make_buffer(hydrant_of_interest, 183)
 
@@ -95,22 +102,24 @@ if __name__ == "__main__":
         # Add a hydrant type column to the buffer dataframe 
         buffer["HYDRANTTYPE"] = hydrant_type
         #print(buffer["HYDRANTTYPE"])
+        #Add a hydrant id column to the buffer dataframe
+        buffer["HYDRANTID"] = hydrant_id
         # Add the buffer to the dataframe for all hydrant buffers
         hydrant_polys_gdf = hydrant_polys_gdf.append(buffer)
 
-    for j in range(len(flow_rate_list)):
+    for j in range(len(hydrant_type_list)):
         row = hydrant_polys_gdf.loc[
-            (hydrant_polys_gdf['FLOWRATE'] == flow_rate_list[j]), 
-            ['FLOWRATE', 'HYDRANTTYPE', 'geometry']
+            (hydrant_polys_gdf['HYDRANTTYPE'] == hydrant_type_list[j]), 
+            ['HYDRANTID', 'FLOWRATE', 'HYDRANTTYPE', 'geometry']
         ]
         gdf_list[j] = gdf_list[j].append(row)
 
     # Convert each of the flow rate GeoDataFrames to geoJson files to be read by Leaflet
     for i in range(len(gdf_list)):
-        flow = flow_rate_list[i]
+        hydrant_type = (hydrant_type_list[i]).replace(" ", "_")
         # Check to see if any dataframes are empty and if so, do not export them to geojson
         if (gdf_list[i]).empty:
             continue
         else:
-            gdf_list[i].to_file("data/%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
-            #gdf_list[i].to_file("%s.geojson" % ("hydrant_" + str(flow)), driver="GeoJSON")
+            gdf_list[i].to_file("data/%s.geojson" % (str(hydrant_type) + "_buffers"), driver="GeoJSON")
+            #gdf_list[i].to_file("%s.geojson" % (str(hydrant_type) + "_buffers"), driver="GeoJSON")
