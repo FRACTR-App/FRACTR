@@ -52,7 +52,7 @@ jobs:
 
     - name: Determine the hydrant types and flow rates
       run:
-        python hydrant_coords_by_type.py
+        python hydrants_coords_by_type.py
 
     - name: Generate VT State polygons
       run: |
