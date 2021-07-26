@@ -85,7 +85,7 @@ def compute_subgraphs(G, response_times, station, agency_id):
         # Make list of nodes into GeoSeries multi-point
         multi_point = gpd.GeoSeries(node_points_coords).unary_union
         # Create a concave hull polygon from the multi-point
-        concave_hull = alphashape.alphashape(multi_point, 30)
+        concave_hull = alphashape.alphashape(multi_point, 50)
         # Convert back to a GeoSeries then to a GeoDataFrame
         bounding_poly_coords = gpd.GeoSeries(concave_hull)
         poly_as_gdf = gpd.GeoDataFrame([bounding_poly_coords])
@@ -111,7 +111,7 @@ def compute_subgraphs(G, response_times, station, agency_id):
 if __name__ == "__main__":
     
     # Read in station coordinate data
-    stations = gpd.read_file("data/fire_station_coords.geojson")
+    stations = gpd.read_file("data/updated_stations_coords.geojson")
     
     # Read in the bounding zone to be used for the graph
     bounding_zone = gpd.read_file("data/vermont_state_polygon.geojson")["geometry"].loc[0]

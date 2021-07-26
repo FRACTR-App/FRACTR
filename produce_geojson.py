@@ -33,6 +33,9 @@ def hydrants_to_geojson(output_file_name, input_file_path):
 
     print("Outputting %s.geojson..." % output_file_name)
     hydrant_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    #hydrant_coords.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
+    return hydrant_coords
+
 
 # Creates a 3-column geojson file containing the emergency service zone polygon coordinates 
 # and ESN number and Fire Agency ID. These polygons include all zones, including police and emergency medical responder 
@@ -42,7 +45,7 @@ def hydrants_to_geojson(output_file_name, input_file_path):
 def zone_to_geojson(output_file_name, input_file_path):
     zone_path = input_file_path
     gdf = gpd.read_file(zone_path)
-    zone_polygons = gdf[["ESN", "FIRE_AgencyId", "geometry"]]
+    zone_polygons = gdf[["ESN", "FIRE_AgencyId", "FIRE_DisplayName", "geometry"]]
 
     # If any FireAgency_Id value includes the substring "WEYBRIDGE", 
     # set the entire string to be simply "WEYBRIDGE".
@@ -50,11 +53,14 @@ def zone_to_geojson(output_file_name, input_file_path):
     # one FIRE_AgencyId zone.
     zone_polygons.loc[zone_polygons["FIRE_AgencyId"].str.contains("WEYBRIDGE"),
         "FIRE_AgencyId"] = "WEYBRIDGE"
+    zone_polygons.loc[zone_polygons["FIRE_DisplayName"].str.contains("WEYBRIDGE"),
+        "FIRE_DisplayName"] = "WEYBRIDGE"
 
     print("Outputting %s.geojson..." % output_file_name)
     zone_polygons.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
+    #zone_polygons.to_file("%s_test.geojson" % output_file_name, driver="GeoJSON")
 
-    return gdf
+    return zone_polygons
 
 
 # Creates a 3-column geojson file containing fire station coordinates, town name, and ESN
@@ -64,8 +70,24 @@ def stations_to_geojson(output_file_name, input_file_path):
     structure_data = input_file_path
     gdf = gpd.read_file(structure_data)
     
+    # Geodataframe that includes all structures with SITETYPE = FIRE STATION
     station_coords = gdf.loc[gdf["SITETYPE"].str.contains("FIRE STATION"),
-        ["TOWNNAME", "ESN", "geometry"]]
+        ["PRIMARYADDRESS", "TOWNNAME", "ESN", "SITETYPE", "geometry"]]
+    
+    # Geodataframe that includes all missing fire departments that have alternative SITETYPEs
+    missing_station_coords = gpd.GeoDataFrame()
+
+    missing_station_addresses = {"15 FOURTH ST": "LAW ENFORCEMENT", "170 ROCKINGHAM ST": "GOVERNMENT", "5 N PARK PL": "TOWN OFFICE", "2996 VT ROUTE 78": "TOWN OFFICE", "68 TOWN OFFICE RD": "GOVERNMENT",
+        "37 DANE RD": "TOWN OFFICE", "1996 BLACKMER BLVD": "TOWN GARAGE", "350 S MAIN ST": "LAW ENFORCEMENT", "29 UNION ST": "LAW ENFORCEMENT", "48 MAIN ST": "AMBULANCE SERVICE", "1187 MAIN ST": "LAW ENFORCEMENT", 
+        "120 FIRST ST": "LAW ENFORCEMENT", "46 TOWN GARAGE RD": "TOWN GARAGE", "12 ROUTE 215": "GOVERNMENT"}
+    for key in missing_station_addresses:
+        site_type = missing_station_addresses[key]
+        missing_station_gdf = gdf.loc[(gdf["PRIMARYADDRESS"].str.contains(key)) & (gdf["SITETYPE"].str.contains(site_type)),
+        ["PRIMARYADDRESS", "TOWNNAME", "ESN", "SITETYPE", "geometry"]]
+        missing_station_coords = missing_station_coords.append(missing_station_gdf)
+
+    # Append the two dataframes together ie. stations.append(missing)
+    station_coords = station_coords.append(missing_station_coords)
 
     print("Outputting %s.geojson..." % output_file_name)
     station_coords.to_file("data/%s.geojson" % output_file_name, driver="GeoJSON")
