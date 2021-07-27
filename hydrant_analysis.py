@@ -54,7 +54,7 @@ if __name__ == "__main__":
         dataframesList.append(hydrant_file)
     hydrants = gpd.GeoDataFrame(pd.concat(dataframesList, ignore_index=True), crs=dataframesList[0].crs)
 
-    hydrants = hydrants.head(50)
+    #hydrants = hydrants.head(50)
     # Read in hydrant coordinate data
     # hydrants = gpd.read_file("data/hydrant_coords.geojson")
     
