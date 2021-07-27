@@ -2,9 +2,11 @@
 # This workflow file generates the geoJson data files by running the various 
 # python data fetching and network analysis scripts.
 # It then pushes the files to the "data" directory in the project website repository.
+# It is triggered weekly at midnight on Sundays and when there are new pushes to the repositories.
 
 name: generate-geojson-files
 on:
+  push:
   schedule:
     - cron: '0 0 * * 0' # trigger at midnight on Sunday (weekly)
 
@@ -39,6 +41,18 @@ jobs:
     - name: Fetch API data, filter & convert to geoJson
       run:
         python produce_geojson.py
+
+    - name: Convert department_types.csv to json
+      run: 
+        python dept_type_to_json.py
+
+    - name: Match departments from produce_geojson.py and dept_type_to_json.py
+      run:
+        python match_departments.py
+
+    - name: Determine the hydrant types and flow rates
+      run:
+        python hydrants_coords_by_type.py
 
     - name: Generate VT State polygons
       run: |
