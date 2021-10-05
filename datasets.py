@@ -18,14 +18,12 @@ API_HYDRANTS_PATH = "data/hydrants.json"
 API_ZONES_PATH = "data/zones.json"
 API_STRUCTURES_PATH = "data/structures.json"
 API_VERMONT_PATH = "data/vermont.json"
-# API_SURFACE_WATER_PATH = "data/surface_water.json"
-# API_FOOTPRINTS_PATH = "data/footprints.json"
 
 # Downloads data as JSON files from the Vermont Geoportal REST API
 def request_API_data():
 
     # Make the request for E-911 hydrant data from VT Geoportal
-    r = requests.get('https://opendata.arcgis.com/datasets/8429ff7bc1ba4abeb37d6c8ae49c8a8c_26.geojson')
+    r = requests.get('https://opendata.arcgis.com/datasets/faa4109d4a504dcfbe3b6af6f752fbb7_0.geojson')
     if not(r.raise_for_status()):
         # Create the json object
         hydrant_data = r.json()
@@ -37,7 +35,7 @@ def request_API_data():
         exit(1) # Exit to warn maintainers of an error related to the API
 
     # make the request for E-911 service zone data from VT Geoportal
-    r = requests.get('https://opendata.arcgis.com/datasets/777ccbd85d8f4047906e37b0d16bf1e1_28.geojson')
+    r = requests.get('https://opendata.arcgis.com/datasets/2fcd8223c02b450f8ef12218c4bb1917_0.geojson')
     if not(r.raise_for_status()):
         # Create the json object
         zone_data = r.json()
@@ -49,7 +47,7 @@ def request_API_data():
         exit(1) # Exit to warn maintainers of an error related to the API
 
     # make the request for E-911 structure data from VT Geoportal
-    r = requests.get('https://opendata.arcgis.com/datasets/7a393abbbaa941449630361d9fd153c4_29.geojson')
+    r = requests.get('https://opendata.arcgis.com/datasets/b226846d719a4b3fa59485a41aed1ddf_0.geojson')
     if not(r.raise_for_status()): 
         # Create the json object
         structures_data = r.json()
@@ -71,27 +69,3 @@ def request_API_data():
     else:
         print("An error occurred while trying to retrieve Vermont state data")
         exit(1) # Exit to warn maintainers of an error related to the API
-    
-    # # make the request for VT Hydrography Dataset - Cartographic Extract Polygons from VT Geoportal
-    # r = requests.get('https://opendata.arcgis.com/datasets/87b11946959a4961a0f594208ae7ccd3_11.geojson')
-    # if not(r.raise_for_status()): 
-    #     # Create the json object
-    #     surface_water_data = r.json()
-    #     # Write the object to file.
-    #     with open(API_SURFACE_WATER_PATH,'w') as jsonFile:
-    #         json.dump(surface_water_data, jsonFile)
-    # else:
-    #     print("An error occurred while trying to retrieve surface water data")
-    #     exit(1) # Exit to warn maintainers of an error related to the API
-    
-    # # make the request for E-911 Footprints Dataset from VT Geoportal
-    # r = requests.get('https://opendata.arcgis.com/datasets/8112dd2b554745c981aea87a9a1bc69e_27.geojson')
-    # if not(r.raise_for_status()): 
-    #     # Create the json object
-    #     footprints_data = r.json()
-    #     # Write the object to file.
-    #     with open(API_FOOTPRINTS_PATH,'w') as jsonFile:
-    #         json.dump(footprints_data, jsonFile)
-    # else:
-    #     print("An error occurred while trying to retrieve footprints data")
-    #     exit(1) # Exit to warn maintainers of an error related to the API
