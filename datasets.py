@@ -59,7 +59,7 @@ def request_API_data():
         exit(1) # Exit to warn maintainers of an error related to the API
 
     # make the request for state of Vermont polygon from VT Geoportal
-    r = requests.get('https://opendata.arcgis.com/datasets/ad7e257457364c71a050f9291eafc806_31.geojson')
+    r = requests.get('https://opendata.arcgis.com/datasets/444912c91fc94ab0a8b47781d7b147bb_0.geojson')
     if not(r.raise_for_status()): 
         # Create the json object
         vermont_state_data = r.json()
