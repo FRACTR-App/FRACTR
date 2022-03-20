@@ -38,10 +38,10 @@ jobs:
         pip install tqdm
         pip install alphashape
 
-    - name: Fix issues with Fiona & GDAL # https://stackoverflow.com/questions/69521550/importerror-the-read-file-function-requires-the-fiona-package-but-it-is-no
-      run: |
-        pip uninstall --yes gdal fiona
-        pip install gdal fiona 
+#     - name: Fix issues with Fiona & GDAL # https://stackoverflow.com/questions/69521550/importerror-the-read-file-function-requires-the-fiona-package-but-it-is-no
+#       run: |
+#         pip uninstall --yes gdal fiona
+#         pip install gdal fiona 
 
     - name: Fetch API data, filter & convert to geoJson
       run:
