@@ -31,6 +31,7 @@ jobs:
 
     - name: Install OSMNX
       run: |
+        conda clean -i
         conda install -c conda-forge osmnx 
 
     - name: Install other python packages
