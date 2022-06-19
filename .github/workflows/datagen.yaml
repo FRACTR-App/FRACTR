@@ -29,6 +29,10 @@ jobs:
         activate-environment: ox
         python-version: 3.9.2
 
+    - name: Check OSMNX path
+    run: |
+      conda config --show-sources
+
     - name: Install OSMNX
       run: |
         conda clean -i
