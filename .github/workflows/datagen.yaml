@@ -30,8 +30,8 @@ jobs:
         python-version: 3.9.2
 
     - name: Check OSMNX path
-    run: |
-      conda config --show-sources
+      run: |
+        conda config --show-sources
 
     - name: Install OSMNX
       run: |
