@@ -32,6 +32,8 @@ jobs:
     - name: Install OSMNX
       run: |
         conda clean -i
+        rm -rf .condarc
+        conda config --set show_channel_urls true
         conda install -c conda-forge osmnx 
 
     - name: Install other python packages
